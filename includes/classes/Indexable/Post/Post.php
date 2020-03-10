@@ -779,7 +779,7 @@ class Post extends Indexable {
 		 * @param  {array} $taxonomies an array of taxonomies
 		 * @return  {array} List of taxonomies to use for tax query
 		 */
-		$taxonomies = apply_filters( 'ep_post_get_taxonomies', get_taxonomies );
+		$taxonomies = apply_filters( 'ep_post_get_taxonomies', get_taxonomies() );
 
 		foreach ( $taxonomies as $tax_slug ) {
 			if ( 'ep_custom_result' === $tax_slug ) {

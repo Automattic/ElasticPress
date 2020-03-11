@@ -771,7 +771,6 @@ class Post extends Indexable {
 		 *
 		 * @since  3.4
 		 */
-
 		$taxonomies = get_taxonomies();
 
 		foreach ( $taxonomies as $tax_slug ) {

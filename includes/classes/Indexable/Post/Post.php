@@ -1707,6 +1707,6 @@ class Post extends Indexable {
 			'year',
 		);
 
-		return in_array( $value, $protected_parameter_list );
+		return in_array( $value, $protected_parameter_list, true );
 	}
 }

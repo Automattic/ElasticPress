@@ -159,8 +159,8 @@ class TestPost extends BaseTestCase {
 		
 		$post_with_comments = ElasticPress\Indexables::factory()->get( 'post' )->get( $post_id );
 
-		$this->assertEquals( 0, intval( $post_no_comments->comment_count ), 'comment count for post should be 0 initially' );
-		$this->assertEquals( 0, intval( $post_with_comments->comment_count ), 'comment count for post should be 1 after sync' );
+		$this->assertEquals( 0, intval( $post_no_comments['comment_count'] ), 'comment count for post should be 0 initially' );
+		$this->assertEquals( 1, intval( $post_with_comments['comment_count'] ), 'comment count for post should be 1 after sync' );
 	}
 
 	/**

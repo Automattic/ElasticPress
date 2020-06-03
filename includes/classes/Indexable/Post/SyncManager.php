@@ -145,7 +145,7 @@ class SyncManager extends SyncManagerAbstract {
 		 *  @param {bool} $skip Current value of whether to skip running action_edited_term or not
 		 *  @return {bool}  New value of whether to skip running action_edited_term or not
 		 */
-		if ( apply_filters( 'ep_skip_action_edited_term', false ) ) {
+		if ( apply_filters( 'ep_skip_action_edited_term', false, $term_id, $tt_id, $taxonomy ) ) {
 			return;
 		}
 

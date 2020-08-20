@@ -500,6 +500,17 @@ class AdminNotices {
 			$dismiss = get_option( 'ep_hide_es_above_compat_notice', false );
 		}
 
+		/**
+		 * Filter to allow hiding the Elasticsearch above compatible version notice
+		 *
+		 * @hook ep_hide_es_above_compat_notice
+		 * @param  {bool} $dismiss Current bool for whether to show the notice
+		 * @return {bool} New bool for whether to show the notice
+		 */
+		if ( true === apply_filters( 'ep_hide_es_above_compat_notice', false ) ) {
+			$dismiss = true;
+		}
+
 		if ( $dismiss ) {
 			return false;
 		}

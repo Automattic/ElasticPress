@@ -500,7 +500,7 @@ class Command extends WP_CLI_Command {
 	/**
 	 * Index all posts for a site or network wide
 	 *
-	 * @synopsis [--setup] [--network-wide] [--per-page] [--nobulk] [--show-errors] [--offset] [--indexables] [--show-bulk-errors] [--show-nobulk-errors] [--post-type] [--include] [--post-ids] [--ep-host] [--ep-prefix]
+	 * @synopsis [--setup] [--network-wide] [--per-page] [--nobulk] [--show-errors] [--offset] [--advanced-pagination] [--start-post-id] [--indexables] [--show-bulk-errors] [--show-nobulk-errors] [--post-type] [--include] [--post-ids] [--ep-host] [--ep-prefix]
 	 *
 	 * @param array $args Positional CLI args.
 	 * @since 0.1.2
@@ -709,7 +709,6 @@ class Command extends WP_CLI_Command {
 	private function index_helper( Indexable $indexable, $args ) {
 		$synced              = 0;
 		$errors              = [];
-		$no_bulk_count       = 0;
 		$index_queue         = [];
 		$killed_object_count = 0;
 		$failed_objects      = [];
@@ -747,9 +746,19 @@ class Command extends WP_CLI_Command {
 		$query_args = [];
 
 		$query_args['offset'] = 0;
-
 		if ( ! empty( $args['offset'] ) ) {
 			$query_args['offset'] = absint( $args['offset'] );
+		}
+
+		// More performant pagination. Keeping behind this feature flag for now during testing.
+		if ( ! empty( $args['advanced-pagination'] ) ) {
+			$query_args['ep_indexing_advanced_pagination'] = true;
+
+			if ( ! empty( $args['start-post-id'] ) ) {
+				$query_args['ep_indexing_start_post_id'] = absint( $args['start-post-id'] );
+				// Perpetually remember for the "total_objects" count to keep the progress bar accurate.
+				$query_args['ep_indexing_initial_start_post_id'] = absint( $args['start-post-id'] );
+			}
 		}
 
 		if ( ! empty( $args['post-ids'] ) ) {
@@ -760,6 +769,9 @@ class Command extends WP_CLI_Command {
 			$include               = explode( ',', str_replace( ' ', '', $args['include'] ) );
 			$query_args['include'] = array_map( 'absint', $include );
 			$args['per-page']      = count( $query_args['include'] );
+
+			// Disable advanced pagination. Not useful if only indexing specific IDs.
+			$query_args['ep_indexing_advanced_pagination'] = false;
 		}
 
 		$per_page = $indexable->get_bulk_items_per_page();
@@ -774,6 +786,7 @@ class Command extends WP_CLI_Command {
 			$query_args['post_type'] = array_map( 'trim', $query_args['post_type'] );
 		}
 
+		$loop_counter = 0;
 		while ( true ) {
 			$query = $indexable->query_db( $query_args );
 
@@ -785,14 +798,14 @@ class Command extends WP_CLI_Command {
 			if ( ! empty( $query['objects'] ) ) {
 
 				foreach ( $query['objects'] as $object ) {
+					// Remember the last post ID that was cycled over. Used for pagination performance enhancements.
+					$query_args['ep_indexing_start_post_id'] = $object->ID;
 
 					if ( $no_bulk ) {
 						/**
 						 * Index objects one by one
 						 */
 						$result = $indexable->index( $object->ID, true );
-
-						$no_bulk_count++;
 
 						if ( ! empty( $result->error ) ) {
 							if ( ! empty( $result->error->reason ) ) {
@@ -814,8 +827,6 @@ class Command extends WP_CLI_Command {
 						 * @param {Indexable} $indexable Current indexable
 						 */
 						do_action( 'ep_cli_object_index', $object->ID, $indexable );
-
-						WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d...', 'elasticpress' ), $no_bulk_count, (int) $query['total_objects'] ) );
 					} else {
 						/**
 						 * Conditionally kill indexing for a post
@@ -897,8 +908,11 @@ class Command extends WP_CLI_Command {
 				break;
 			}
 
-			if ( ! $no_bulk ) {
-				WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d...', 'elasticpress' ), (int) ( count( $query['objects'] ) + $query_args['offset'] ), (int) $query['total_objects'] ) );
+			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Post ID: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $query['total_objects'], (int) $query_args['ep_indexing_start_post_id'] ) );
+
+			$loop_counter++;
+			if ( ( $loop_counter % 10 ) === 0 ) {
+				WP_CLI::log( WP_CLI::colorize( '%Y' . esc_html__( 'Time elapsed: ', 'elasticpress' ) . '%N' . timer_stop() ) );
 			}
 
 			$query_args['offset'] += $per_page;

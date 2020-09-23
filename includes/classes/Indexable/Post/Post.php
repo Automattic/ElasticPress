@@ -45,6 +45,8 @@ class Post extends Indexable {
 
 		$this->sync_manager      = new SyncManager( $this->slug );
 		$this->query_integration = new QueryIntegration( $this->slug );
+
+		add_filter( 'posts_where', array( $this, 'bulk_indexing_filter_posts_where' ), 9999, 2 );
 	}
 
 	/**
@@ -95,12 +97,63 @@ class Post extends Indexable {
 		 */
 		$args = apply_filters( 'ep_index_posts_args', $args );
 
+		// Implement custom pagination for better performance.
+		if ( ! empty( $args['ep_indexing_advanced_pagination'] ) ) {
+			// Apply an initial start_post_id if needed.
+			$args['ep_indexing_start_post_id'] = ! empty( $args['ep_indexing_start_post_id'] ) ? $args['ep_indexing_start_post_id'] : PHP_INT_MAX;
+			$args['ep_indexing_initial_start_post_id'] = ! empty( $args['ep_indexing_initial_start_post_id'] ) ? $args['ep_indexing_initial_start_post_id'] : PHP_INT_MAX;
+
+			// Get a snapshot of the total found_posts just once (is cached). Uses "initial_start_post_id" to ensure query does not change and stays cached.
+			$total_objects_query = new WP_Query( array_merge( $args, [ 'offset' => 0, 'posts_per_page' => 1, 'no_found_rows' => false, 'ep_indexing_skip_last_part_of_range' => true, 'ep_indexing_start_post_id' => $args['ep_indexing_initial_start_post_id'] ] ) );
+
+			// Force the following query args to ensure things work correctly.
+			unset( $args['offset'] );
+			$args = array_merge( $args, [
+				'suppress_filters' => false,
+				'no_found_rows'    => true,
+				'orderby'          => 'ID',
+				'order'            => 'DESC',
+				'paged'            => 1,
+			] );
+		}
+
 		$query = new WP_Query( $args );
+
+		// If the query failed to return any posts, remove the second part of the range to ensure there truly are no matching posts left.
+		if ( empty( $query->posts ) && ! empty( $args['ep_indexing_advanced_pagination'] ) ) {
+			$query = new WP_Query( array_merge( $args, [ 'ep_indexing_skip_last_part_of_range' => true ] ) );
+		}
 
 		return [
 			'objects'       => $query->posts,
-			'total_objects' => $query->found_posts,
+			'total_objects' => isset( $total_objects_query ) ? $total_objects_query->found_posts : $query->found_posts,
 		];
+	}
+
+	/**
+	 * Manipulate the WHERE clause of the bulk indexing query to paginate by ID in order to avoid performance issues with SQL offset.
+	 *
+	 * @param  string $where The current $where clause.
+	 * @param  WP_Query &$query WP_Query object.
+	 * @return string WHERE clause with our pagination added if needed.
+	 */
+	public function bulk_indexing_filter_posts_where( $where, $query ) {
+		$using_advanced_pagination = $query->get( 'ep_indexing_advanced_pagination', false );
+		$start_post_id = $query->get( 'ep_indexing_start_post_id', null );
+
+		if ( $using_advanced_pagination && is_int( $start_post_id ) ) {
+			$cutoff_point_id = max( $start_post_id - 50000, 0 );
+			$range = [
+				'start' => "{$GLOBALS['wpdb']->posts}.ID < {$start_post_id}",
+				'end'   => "{$GLOBALS['wpdb']->posts}.ID > {$cutoff_point_id}",
+			];
+
+			// Skip the end range when we need to make sure there are truly no more posts, or if we are looking for the "total_objects" count.
+			$skip_ending_range = $query->get( 'ep_indexing_skip_last_part_of_range', false );
+			$where = $skip_ending_range ? "AND {$range['start']} {$where}" : "AND {$range['start']} AND {$range['end']} {$where}";
+		}
+
+		return $where;
 	}
 
 	/**

@@ -385,6 +385,59 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
+	 * Ensure all the expected data is present when syncing terms.
+	 *
+	 * @group post
+	 */
+	public function testPostTermSyncData() {
+		global $wpdb;
+
+		$test_post_id = Functions\create_and_sync_post();
+		$test_post    = get_post( $test_post_id );
+
+		// Create a new taxonomy & term (with a parent).
+		$taxonomy_name = rand_str( 32 );
+		register_taxonomy( $taxonomy_name, $test_post->post_type, array( 'label' => $taxonomy_name ) );
+		register_taxonomy_for_object_type( $taxonomy_name, $test_post->post_type );
+		$parent_term = wp_insert_term( rand_str( 32 ), $taxonomy_name );
+		$test_term   = wp_insert_term( rand_str( 32 ), $taxonomy_name, [ 'parent' => $parent_term['term_id'] ] );
+
+		// Assign the test term to our post and sync it up.
+		wp_set_object_terms( $test_post_id, array( $test_term['term_id'] ), $taxonomy_name, true );
+		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->term_relationships SET term_order = 123 WHERE object_id = %d AND term_taxonomy_id = %d;", $test_post_id, $test_term[ 'term_taxonomy_id' ] ) );
+
+		ElasticPress\Indexables::factory()->get( 'post' )->index( $test_post_id, true );
+		$indexed_post_data = ElasticPress\Indexables::factory()->get( 'post' )->get( $test_post_id );
+
+		// Now ensure all the appropiate term data is present.
+		$indexed_term_data  = $indexed_post_data['terms'][ $taxonomy_name ];
+		$this->assertTrue( count( $indexed_term_data ) === 2 );
+
+		foreach ( $indexed_term_data as $indexed_term ) {
+			$this->assertTrue( in_array( $indexed_term['term_id'], [ $test_term['term_id'], $parent_term['term_id'] ], true ) );
+
+			$actual_data      = get_term( $indexed_term['term_id'], $taxonomy_name, ARRAY_A );
+			$term_order_query = $wpdb->get_results( $wpdb->prepare( "SELECT term_order FROM $wpdb->term_relationships WHERE object_id = %d AND term_taxonomy_id = %d;", $test_post_id, $indexed_term[ 'term_taxonomy_id' ] ), OBJECT );
+
+			$expected_data = [
+				'term_id'          => $actual_data[ 'term_id' ],
+				'slug'             => $actual_data[ 'slug' ],
+				'name'             => $actual_data[ 'name' ],
+				'parent'           => $actual_data[ 'parent' ],
+				'term_taxonomy_id' => $actual_data[ 'term_taxonomy_id' ],
+				'term_order'       => isset( $term_order_query[0] ) ? $term_order_query[0]->term_order : 0,
+			];
+
+			$this->assertEquals( $indexed_term, $expected_data );
+
+			if ( $test_term['term_id'] === $indexed_term['term_id'] ) {
+				// Additional check to make extra sure term_order is syncing correctly.
+				$this->assertEquals( 123, $indexed_term[ 'term_order' ] );
+			}
+		}
+	}
+
+	/**
 	 * Make sure proper non-hierarchical taxonomies are synced with post when ep_sync_terms_allow_hierarchy is
 	 * set to false.
 	 *

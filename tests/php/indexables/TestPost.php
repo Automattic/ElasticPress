@@ -5058,11 +5058,11 @@ class TestPost extends BaseTestCase {
 
 		wp_set_post_terms( $post_id, 'testPrepareDocumentFallbacks', 'category', true );
 
-		add_filter( 'ep_sync_taxonomies', '__return_false' );
+		add_filter( 'ep_sync_taxonomies', '__return_empty_array' );
 
 		$post_args = $post->prepare_document( $post_id );
 
-		remove_filter( 'ep_sync_taxonomies', '__return_false' );
+		remove_filter( 'ep_sync_taxonomies', '__return_empty_array' );
 
 		$this->assertTrue( is_array( $post_args ) );
 		$this->assertTrue( is_array( $post_args['terms'] ) );

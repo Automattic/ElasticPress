@@ -385,7 +385,7 @@ class Post extends Indexable {
 		 * @param  {WP_Post} Post object
 		 * @return  {array} New taxonomies
 		 */
-		$selected_taxonomies = apply_filters( 'ep_sync_taxonomies', $selected_taxonomies, $post );
+		$selected_taxonomies = (array) apply_filters( 'ep_sync_taxonomies', $selected_taxonomies, $post );
 
 		// Important we validate here to ensure there are no imposters, as just one would cause wp_get_object_terms() to fail.
 		$validated_taxonomies = [];

@@ -457,7 +457,7 @@ class Post extends Indexable {
 
 		// Re-index with the taxonomy as the array key, and all the terms underneath.
 		$prepared_terms = [];
-		foreach( $terms_dictionary as $term_to_prepare ) {
+		foreach ( $terms_dictionary as $term_to_prepare ) {
 			$taxonomy_index = $term_to_prepare['taxonomy'];
 
 			if ( ! isset( $prepared_terms[ $taxonomy_index ] ) ) {

@@ -750,13 +750,12 @@ class Command extends WP_CLI_Command {
 			$query_args['offset'] = absint( $args['offset'] );
 		}
 
-		// More performant pagination. Keeping behind this feature flag for now during testing.
-		if ( ! empty( $args['advanced-pagination'] ) ) {
-			$query_args['ep_indexing_advanced_pagination'] = true;
+		if ( ! empty( $args['start-object-id'] ) && is_numeric( $args['start-object-id'] ) ) {
+			$query_args['ep_indexing_start_object_id'] = $args['start-object-id'];
+		}
 
-			if ( ! empty( $args['start-object-id'] ) && is_numeric( $args['start-object-id'] ) ) {
-				$query_args['ep_indexing_start_object_id'] = $args['start-object-id'];
-			}
+		if ( ! empty( $args['last-object-id'] ) && is_numeric( $args['last-object-id'] ) ) {
+			$query_args['ep_indexing_last_object_id'] = $args['last-object-id'];
 		}
 
 		if ( ! empty( $args['post-ids'] ) ) {
@@ -785,8 +784,9 @@ class Command extends WP_CLI_Command {
 		}
 
 		$loop_counter = 0;
+		$total_objects_to_process = $indexable->query_db( $query_args )['total_objects'];
 		while ( true ) {
-			$query = $indexable->query_db( $query_args );
+			$query = $indexable->query_db( $query_args, 'exclude_total_objects_count' );
 
 			/**
 			 * Reset bulk object queue
@@ -904,7 +904,7 @@ class Command extends WP_CLI_Command {
 			}
 
 			$last_processed_object_id = $query['objects'][ array_key_last( $query['objects'] ) ]->ID;
-			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID Processed: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $query['total_objects'], (int) $last_processed_object_id ) );
+			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID Processed: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $total_objects_to_process, (int) $last_processed_object_id ) );
 
 			$loop_counter++;
 			if ( ( $loop_counter % 10 ) === 0 ) {

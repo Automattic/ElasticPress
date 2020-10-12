@@ -754,10 +754,8 @@ class Command extends WP_CLI_Command {
 		if ( ! empty( $args['advanced-pagination'] ) ) {
 			$query_args['ep_indexing_advanced_pagination'] = true;
 
-			if ( ! empty( $args['start-post-id'] ) ) {
-				$query_args['ep_indexing_start_post_id'] = absint( $args['start-post-id'] );
-				// Perpetually remember for the "total_objects" count to keep the progress bar accurate.
-				$query_args['ep_indexing_initial_start_post_id'] = absint( $args['start-post-id'] );
+			if ( ! empty( $args['start-object-id'] ) && is_numeric( $args['start-object-id'] ) ) {
+				$query_args['ep_indexing_start_object_id'] = $args['start-object-id'];
 			}
 		}
 
@@ -798,9 +796,6 @@ class Command extends WP_CLI_Command {
 			if ( ! empty( $query['objects'] ) ) {
 
 				foreach ( $query['objects'] as $object ) {
-					// Remember the last post ID that was cycled over. Used for pagination performance enhancements.
-					$query_args['ep_indexing_start_post_id'] = $object->ID;
-
 					if ( $no_bulk ) {
 						/**
 						 * Index objects one by one
@@ -908,7 +903,8 @@ class Command extends WP_CLI_Command {
 				break;
 			}
 
-			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Post ID: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $query['total_objects'], (int) $query_args['ep_indexing_start_post_id'] ) );
+			$last_processed_object_id = $query['objects'][ array_key_last( $query['objects'] ) ]->ID;
+			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID Processed: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $query['total_objects'], (int) $last_processed_object_id ) );
 
 			$loop_counter++;
 			if ( ( $loop_counter % 10 ) === 0 ) {
@@ -916,12 +912,12 @@ class Command extends WP_CLI_Command {
 			}
 
 			$query_args['offset'] += $per_page;
+			$query_args['ep_indexing_last_processed_object_id'] = $last_processed_object_id;
 
 			usleep( 500 );
 
 			// Avoid running out of memory.
 			$this->stop_the_insanity();
-
 		}
 
 		if ( $show_errors && ! empty( $failed_objects ) ) {

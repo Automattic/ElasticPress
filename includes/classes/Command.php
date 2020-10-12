@@ -500,7 +500,7 @@ class Command extends WP_CLI_Command {
 	/**
 	 * Index all posts for a site or network wide
 	 *
-	 * @synopsis [--setup] [--network-wide] [--per-page] [--nobulk] [--show-errors] [--offset] [--advanced-pagination] [--start-post-id] [--indexables] [--show-bulk-errors] [--show-nobulk-errors] [--post-type] [--include] [--post-ids] [--ep-host] [--ep-prefix]
+	 * @synopsis [--setup] [--network-wide] [--per-page] [--nobulk] [--show-errors] [--offset] [--start-post-id] [--end-post-id] [--indexables] [--show-bulk-errors] [--show-nobulk-errors] [--post-type] [--include] [--post-ids] [--ep-host] [--ep-prefix]
 	 *
 	 * @param array $args Positional CLI args.
 	 * @since 0.1.2
@@ -754,8 +754,8 @@ class Command extends WP_CLI_Command {
 			$query_args['ep_indexing_start_object_id'] = $args['start-object-id'];
 		}
 
-		if ( ! empty( $args['last-object-id'] ) && is_numeric( $args['last-object-id'] ) ) {
-			$query_args['ep_indexing_last_object_id'] = $args['last-object-id'];
+		if ( ! empty( $args['end-object-id'] ) && is_numeric( $args['end-object-id'] ) ) {
+			$query_args['ep_indexing_end_object_id'] = $args['end-object-id'];
 		}
 
 		if ( ! empty( $args['post-ids'] ) ) {
@@ -766,9 +766,6 @@ class Command extends WP_CLI_Command {
 			$include               = explode( ',', str_replace( ' ', '', $args['include'] ) );
 			$query_args['include'] = array_map( 'absint', $include );
 			$args['per-page']      = count( $query_args['include'] );
-
-			// Disable advanced pagination. Not useful if only indexing specific IDs.
-			$query_args['ep_indexing_advanced_pagination'] = false;
 		}
 
 		$per_page = $indexable->get_bulk_items_per_page();

@@ -109,8 +109,10 @@ class Post extends Indexable {
 		if ( ! $exclude_total_objects_count ) {
 			// Process a quicker query when fetching SQL_CALC_FOUND_ROWS. Same query each time if called during a loop, so it'll be cached.
 			$total_objects_query = new WP_Query( array_merge( $args, [
+				'offset'         => 0,
+				'paged'          => 1,
 				'posts_per_page' => 1,
-				'no_found_rows' => false,
+				'no_found_rows'  => false,
 				'ep_indexing_last_processed_object_id' => null,
 			] ) );
 		}
@@ -137,27 +139,27 @@ class Post extends Indexable {
 
 		if ( $using_advanced_pagination ) {
 			$requested_start_id = $query->get( 'ep_indexing_start_object_id', PHP_INT_MAX );
-			$requested_last_id  = $query->get( 'ep_indexing_last_object_id', 0 );
+			$requested_end_id   = $query->get( 'ep_indexing_end_object_id', 0 );
 			$last_processed_id  = $query->get( 'ep_indexing_last_processed_object_id', null );
 
-			// On the first loopthrough we start with the requested start ID. Afterwards, use the last processed ID to paginate.
+			// On the first loopthrough we begin with the requested start ID. Afterwards, use the last processed ID to paginate.
 			$start_range_post_id = $requested_start_id;
 			if ( is_numeric( $last_processed_id ) ) {
 				$start_range_post_id = number_format( $last_processed_id - '1', 0, '.', '' );
 			}
 
 			// Sanitize. Abort if unexpected data at this point.
-			if ( ! is_numeric( $start_range_post_id ) || ! is_numeric( $requested_last_id ) ) {
+			if ( ! is_numeric( $start_range_post_id ) || ! is_numeric( $requested_end_id ) ) {
 				return $where;
 			}
 
 			$range = [
 				'start' => "{$GLOBALS['wpdb']->posts}.ID <= {$start_range_post_id}",
-				'end'   => "{$GLOBALS['wpdb']->posts}.ID >= {$requested_last_id}",
+				'end'   => "{$GLOBALS['wpdb']->posts}.ID >= {$requested_end_id}",
 			];
 
 			// Skip the end range if it's unnecessary.
-			$skip_ending_range = 0 === $requested_last_id;
+			$skip_ending_range = 0 === $requested_end_id;
 			$where = $skip_ending_range ? "AND {$range['start']} {$where}" : "AND {$range['start']} AND {$range['end']} {$where}";
 		}
 

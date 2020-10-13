@@ -51,11 +51,10 @@ class Post extends Indexable {
 	 * Query database for posts
 	 *
 	 * @param  array $args Query DB args
-	 * @param  bool  $exclude_total_objects_count
 	 * @since  3.0
 	 * @return array
 	 */
-	public function query_db( $args, $exclude_total_objects_count = false ) {
+	public function query_db( $args ) {
 		$defaults = [
 			'posts_per_page'      => $this->get_bulk_items_per_page(),
 			'post_type'           => $this->get_indexable_post_types(),
@@ -109,24 +108,14 @@ class Post extends Indexable {
 
 		add_filter( 'posts_where', array( $this, 'bulk_indexing_filter_posts_where' ), 9999, 2 );
 
-		if ( ! $exclude_total_objects_count ) {
-			// Process a quicker query when fetching SQL_CALC_FOUND_ROWS. Same query each time if called during a loop, so it'll be cached.
-			$total_objects_query = new WP_Query( array_merge( $args, [
-				'offset'         => 0,
-				'paged'          => 1,
-				'posts_per_page' => 1,
-				'no_found_rows'  => false,
-				'ep_indexing_last_processed_object_id' => null,
-			] ) );
-		}
-
-		$query = new WP_Query( $args );
+		$query         = new WP_Query( $args );
+		$total_objects = $this->get_total_objects_for_query( $args );
 
 		remove_filter( 'posts_where', array( $this, 'bulk_indexing_filter_posts_where' ), 9999, 2 );
 
 		return [
 			'objects'       => $query->posts,
-			'total_objects' => isset( $total_objects_query ) ? $total_objects_query->found_posts : $query->found_posts,
+			'total_objects' => $total_objects,
 		];
 	}
 
@@ -167,6 +156,33 @@ class Post extends Indexable {
 		}
 
 		return $where;
+	}
+
+	/**
+	 * Get SQL_CALC_FOUND_ROWS for a specific query based on it's args.
+	 *
+	 * @param array $query_args The query args.
+	 * @return int The query result's found_posts.
+	 */
+	private function get_total_objects_for_query( $query_args ) {
+		static $object_counts = [];
+
+		// Reset the pagination-related args for optimal caching.
+		$normalized_query_args = array_merge( $query_args, [
+			'offset'         => 0,
+			'paged'          => 1,
+			'posts_per_page' => 1,
+			'no_found_rows'  => false,
+			'ep_indexing_last_processed_object_id' => null,
+		] );
+
+		$cache_key = md5( json_encode( $normalized_query_args ) );
+
+		if ( ! isset( $object_counts[ $cache_key ] ) ) {
+			$object_counts[ $cache_key ] = ( new WP_Query( $normalized_query_args ) )->found_posts;
+		}
+
+		return $object_counts[ $cache_key ];
 	}
 
 	/**

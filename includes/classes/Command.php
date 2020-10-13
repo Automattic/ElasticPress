@@ -781,9 +781,8 @@ class Command extends WP_CLI_Command {
 		}
 
 		$loop_counter = 0;
-		$total_objects_to_process = $indexable->query_db( $query_args )['total_objects'];
 		while ( true ) {
-			$query = $indexable->query_db( $query_args, 'exclude_total_objects_count' );
+			$query = $indexable->query_db( $query_args );
 
 			/**
 			 * Reset bulk object queue
@@ -902,7 +901,7 @@ class Command extends WP_CLI_Command {
 
 			$last_object_array_key    = array_keys( $query['objects'] )[ count( $query['objects'] ) - 1 ];
 			$last_processed_object_id = $query['objects'][ $last_object_array_key ]->ID;
-			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $total_objects_to_process, (int) $last_processed_object_id ) );
+			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $query['total_objects'], (int) $last_processed_object_id ) );
 
 			$loop_counter++;
 			if ( ( $loop_counter % 10 ) === 0 ) {

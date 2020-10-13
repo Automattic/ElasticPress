@@ -71,7 +71,7 @@ class Post extends Indexable {
 			$args['posts_per_page'] = $args['per_page'];
 		}
 
-		// Default to using the advanced pagiation for better performance.
+		// Default to using the advanced pagination for better performance.
 		$args['ep_indexing_advanced_pagination'] = true;
 
 		if ( isset( $args['include'] ) ) {

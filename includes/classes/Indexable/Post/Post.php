@@ -88,7 +88,7 @@ class Post extends Indexable {
 		 * @param  {array} $args Database arguments
 		 * @return  {array} New arguments
 		 */
-		$args = apply_filters( 'ep_post_query_db_args', apply_filters( 'ep_index_posts_args', wp_parse_args( $args, $defaults ) ) );
+		$args = apply_filters( 'ep_index_posts_args', apply_filters( 'ep_post_query_db_args', wp_parse_args( $args, $defaults ) ) );
 
 		if ( isset( $args['include'] ) || isset( $args['post__in'] ) ) {
 			// Disable advanced pagination. Not useful if only indexing specific IDs.

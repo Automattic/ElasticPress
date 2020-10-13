@@ -103,6 +103,7 @@ class Post extends Indexable {
 				'order'            => 'DESC',
 				'paged'            => 1,
 				'offset'           => 0,
+				'no_found_rows'    => true,
 			] );
 		}
 

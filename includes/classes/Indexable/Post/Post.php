@@ -64,14 +64,12 @@ class Post extends Indexable {
 			'orderby'             => 'ID',
 			'order'               => 'desc',
 			'no_found_rows'       => true,
+			'ep_indexing_advanced_pagination' => true,
 		];
 
 		if ( isset( $args['per_page'] ) ) {
 			$args['posts_per_page'] = $args['per_page'];
 		}
-
-		// Default to using the advanced pagination for better performance.
-		$args['ep_indexing_advanced_pagination'] = true;
 
 		if ( isset( $args['include'] ) ) {
 			$args['post__in'] = $args['include'];
@@ -84,8 +82,8 @@ class Post extends Indexable {
 		 *
 		 * @hook ep_post_query_db_args
 		 * @hook ep_index_posts_args
-		 * @param  {array} $args Database arguments
-		 * @return  {array} New arguments
+		 * @param {array} $args Database arguments
+		 * @return {array} New arguments
 		 */
 		$args = apply_filters( 'ep_index_posts_args', apply_filters( 'ep_post_query_db_args', wp_parse_args( $args, $defaults ) ) );
 

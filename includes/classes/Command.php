@@ -712,6 +712,7 @@ class Command extends WP_CLI_Command {
 		$index_queue         = [];
 		$killed_object_count = 0;
 		$failed_objects      = [];
+		$time_elapsed        = 0;
 
 		$no_bulk = false;
 
@@ -905,7 +906,7 @@ class Command extends WP_CLI_Command {
 
 			$loop_counter++;
 			if ( ( $loop_counter % 10 ) === 0 ) {
-				$time_elapsed_diff = isset( $time_elapsed ) ? ' (+' . (string) ( timer_stop( 0, 2 ) - $time_elapsed ) . ')' : '';
+				$time_elapsed_diff = $time_elapsed > 0 ? ' (+' . (string) ( timer_stop( 0, 2 ) - $time_elapsed ) . ')' : '';
 				$time_elapsed      = timer_stop( 0, 2 );
 				WP_CLI::log( WP_CLI::colorize( '%Y' . esc_html__( 'Time elapsed: ', 'elasticpress' ) . '%N' . $time_elapsed . $time_elapsed_diff ) );
 

@@ -901,11 +901,17 @@ class Command extends WP_CLI_Command {
 			}
 
 			$last_processed_object_id = $query['objects'][ array_key_last( $query['objects'] ) ]->ID;
-			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID Processed: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $total_objects_to_process, (int) $last_processed_object_id ) );
+			WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $total_objects_to_process, (int) $last_processed_object_id ) );
 
 			$loop_counter++;
 			if ( ( $loop_counter % 10 ) === 0 ) {
-				WP_CLI::log( WP_CLI::colorize( '%Y' . esc_html__( 'Time elapsed: ', 'elasticpress' ) . '%N' . timer_stop() ) );
+				$time_elapsed_diff = isset( $time_elapsed ) ? ' (+' . (string) ( timer_stop( 0, 2 ) - $time_elapsed ). ')' : '';
+				$time_elapsed      = timer_stop( 0, 2 );
+				WP_CLI::log( WP_CLI::colorize( '%Y' . esc_html__( 'Time elapsed: ', 'elasticpress' ) . '%N' . $time_elapsed . $time_elapsed_diff ) );
+
+				$current_memory = round( memory_get_usage() / 1024 / 1024, 2 ) . 'mb';
+				$peak_memory    = ' (Peak: ' . round( memory_get_peak_usage() / 1024 / 1024, 2 ) . 'mb)';
+				WP_CLI::log( WP_CLI::colorize( '%Y' . esc_html__( 'Memory Usage: ', 'elasticpress' ) . '%N' . $current_memory . $peak_memory ) );
 			}
 
 			$query_args['offset'] += $per_page;

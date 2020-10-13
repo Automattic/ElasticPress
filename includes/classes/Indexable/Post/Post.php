@@ -76,9 +76,6 @@ class Post extends Indexable {
 
 		if ( isset( $args['include'] ) ) {
 			$args['post__in'] = $args['include'];
-
-			// Disable advanced pagination. Not useful if only indexing specific IDs.
-			$args['ep_indexing_advanced_pagination'] = false;
 		}
 
 		/**
@@ -93,7 +90,12 @@ class Post extends Indexable {
 		 */
 		$args = apply_filters( 'ep_post_query_db_args', apply_filters( 'ep_index_posts_args', wp_parse_args( $args, $defaults ) ) );
 
-		// Force the following query args during advanced pagination to ensure things work correctly.
+		if ( isset( $args['include'] ) || isset( $args['post__in'] ) ) {
+			// Disable advanced pagination. Not useful if only indexing specific IDs.
+			$args['ep_indexing_advanced_pagination'] = false;
+		}
+
+		// Enforce the following query args during advanced pagination to ensure things work correctly.
 		if ( $args['ep_indexing_advanced_pagination'] ) {
 			$args = array_merge( $args, [
 				'suppress_filters' => false,

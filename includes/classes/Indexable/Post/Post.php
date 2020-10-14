@@ -135,7 +135,7 @@ class Post extends Indexable {
 			// On the first loopthrough we begin with the requested start ID. Afterwards, use the last processed ID to paginate.
 			$start_range_post_id = $requested_start_id;
 			if ( is_numeric( $last_processed_id ) ) {
-				$start_range_post_id = number_format( $last_processed_id - '1', 0, '.', '' );
+				$start_range_post_id =  $last_processed_id - 1;
 			}
 
 			// Sanitize. Abort if unexpected data at this point.

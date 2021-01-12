@@ -150,11 +150,11 @@ function sanitize_credentials( $credentials ) {
 function is_indexing() {
 	if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 		$index_meta = get_site_option( 'ep_index_meta', false );
-		$wpcli_sync = get_site_transient( 'ep_wpcli_sync' );
 	} else {
 		$index_meta = get_option( 'ep_index_meta', false );
-		$wpcli_sync = get_transient( 'ep_wpcli_sync' );
 	}
+	$dashboard_indexing = ! empty( $index_meta );
+	$ongoing_indexing = $dashboard_indexing || is_indexing_wpcli();
 
 	/**
 	 * Filter whether an index is occurring in dashboard or CLI
@@ -164,7 +164,7 @@ function is_indexing() {
 	 * @param  {bool} $indexing True for indexing
 	 * @return {bool} New indexing value
 	 */
-	return apply_filters( 'ep_is_indexing', ( ! empty( $index_meta ) || ! empty( $wpcli_sync ) ) );
+	return apply_filters( 'ep_is_indexing', $ongoing_indexing );
 }
 
 /**
@@ -174,11 +174,7 @@ function is_indexing() {
  * @return boolean
  */
 function is_indexing_wpcli() {
-	if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-		$is_indexing = (bool) get_site_transient( 'ep_wpcli_sync' );
-	} else {
-		$is_indexing = (bool) get_transient( 'ep_wpcli_sync', false );
-	}
+	$is_indexing = (bool) get_transient( 'ep_wpcli_sync', false );
 
 	/**
 	 * Filter whether a CLI sync is occuring

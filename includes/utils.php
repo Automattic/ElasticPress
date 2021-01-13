@@ -154,7 +154,7 @@ function is_indexing() {
 		$index_meta = get_option( 'ep_index_meta', false );
 	}
 	$dashboard_indexing = ! empty( $index_meta );
-	$ongoing_indexing = $dashboard_indexing || is_indexing_wpcli();
+	$ongoing_indexing   = $dashboard_indexing || is_indexing_wpcli();
 
 	/**
 	 * Filter whether an index is occurring in dashboard or CLI

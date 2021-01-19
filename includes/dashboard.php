@@ -713,7 +713,7 @@ function action_admin_enqueue_dashboard_scripts() {
 
 		$data = array( 'nonce' => wp_create_nonce( 'ep_dashboard_nonce' ) );
 
-		$wpcli_sync = (bool) Utils\is_indexing_wpcli();
+		$wpcli_sync = Utils\is_indexing_wpcli();
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 			$index_meta           = get_site_option( 'ep_index_meta', [] );
 			$install_complete_url = admin_url( 'network/admin.php?page=elasticpress&install_complete' );

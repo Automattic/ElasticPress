@@ -1016,7 +1016,7 @@ class Elasticsearch {
 		
 		// Add in debugging information that can be used later, like in a Debug Bar panel.
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			$query['backtrace']   = wp_debug_backtrace_summary();
+			$query['backtrace'] = wp_debug_backtrace_summary();
 		}
 
 		$this->add_query_log( $query );

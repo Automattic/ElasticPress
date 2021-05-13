@@ -420,25 +420,27 @@ function get_term_tree( $all_terms, $orderby = 'count', $order = 'desc', $flat =
 	}
 
 	if ( $flat ) {
-		$flat_tree = [];
-
-		foreach ( $terms_tree as $term ) {
-			$flat_tree[] = $term;
-			$to_process  = $term->children;
-			while ( ! empty( $to_process ) ) {
-				$term        = array_shift( $to_process );
-				$flat_tree[] = $term;
-
-				if ( ! empty( $term->children ) ) {
-					$to_process = $term->children + $to_process;
-				}
-			}
-		}
-
-		return $flat_tree;
+		return flatten($terms_tree);
 	}
 
 	return $terms_tree;
+}
+
+/**
+* Flatten a tree based on children key.
+*
+* @param  array       arr tree array
+* @return array.
+*/
+function flatten($arr) {
+    $result = [];
+    foreach($arr as $item) {
+        if (isset($item->children))
+            $result = array_merge($result, flatten($item->children));
+        unset($item->children);
+        $result[] = $item;  
+    }
+    return $result;
 }
 
 /**

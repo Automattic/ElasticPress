@@ -420,7 +420,7 @@ function get_term_tree( $all_terms, $orderby = 'count', $order = 'desc', $flat =
 	}
 
 	if ( $flat ) {
-		return flatten($terms_tree);
+		return flatten_tree_array( $terms_tree );
 	}
 
 	return $terms_tree;
@@ -432,12 +432,12 @@ function get_term_tree( $all_terms, $orderby = 'count', $order = 'desc', $flat =
 * @param  array       arr tree array
 * @return array.
 */
-function flatten($arr) {
+function flatten_tree_array( $arr ) {
     $result = [];
-    foreach($arr as $item) {
-        if (isset($item->children))
-            $result = array_merge($result, flatten($item->children));
-        unset($item->children);
+    foreach( $arr as $item ) {
+        if ( isset($item->children ) )
+            $result = array_merge( $result, flatten_tree_array( $item->children ) );
+        unset( $item->children );
         $result[] = $item;  
     }
     return $result;

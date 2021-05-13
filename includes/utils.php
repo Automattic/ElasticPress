@@ -435,8 +435,9 @@ function get_term_tree( $all_terms, $orderby = 'count', $order = 'desc', $flat =
 function flatten_tree_array( $arr ) {
     $result = [];
     foreach( $arr as $item ) {
-        if ( isset($item->children ) )
+        if ( isset($item->children ) ) {
             $result = array_merge( $result, flatten_tree_array( $item->children ) );
+		}
         unset( $item->children );
         $result[] = $item;  
     }

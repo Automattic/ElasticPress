@@ -1,6 +1,6 @@
 <?php
 /**
- * Test stats functionality
+ * Test the includes/utils.php functionality
  *
  * @package elasticpress
  */

@@ -856,7 +856,7 @@ class Post extends Indexable {
 		 */
 
 		// Find root level taxonomies.
-		if ( empty( $args['tax_query'] ) ) { // Remove duplicate queries from Core's backwards compat feature of setting 'category_name', 'cat' and 'tag_id': https://github.com/WordPress/WordPress/blob/5d99107bf3ab35aa3dda82c6b3903f5717771335/wp-includes/class-wp-query.php#L2193
+		if ( empty( $args['tax_query'] ) ) { // Remove duplicate queries from Core's backwards compat feature of setting 'category_name', 'cat': https://github.com/WordPress/WordPress/blob/5d99107bf3ab35aa3dda82c6b3903f5717771335/wp-includes/class-wp-query.php#L2193
 			if ( isset( $args['category_name'] ) && ! empty( $args['category_name'] ) ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => 'category',
@@ -894,7 +894,7 @@ class Post extends Indexable {
 			$has_tag__and = true;
 		}
 
-		if ( isset( $args['tag_id'] ) && ! empty( $args['tag_id'] ) && ! is_array( $args['tag_id'] ) && empty( $args['tax_query'] ) ) {
+		if ( isset( $args['tag_id'] ) && ! empty( $args['tag_id'] ) && ! is_array( $args['tag_id'] ) ) {
 
 			// If you pass tag__in as a parameter, core adds the first
 			// term ID as tag_id, so we only need to append it if we have
@@ -902,8 +902,8 @@ class Post extends Indexable {
 			if ( $has_tag__and ) {
 
 				$args['tax_query'] = array_map(
-					function( $tax_query ) {
-						if ( 'post_tag' === $tax_query ) {
+					function( $tax_query ) use ( $args ) {
+						if ( isset( $tax_query['taxonomy'] ) && 'post_tag' === $tax_query['taxonomy'] && ! in_array( $args['tag_id'], $tax_query['terms'], true ) ) {
 							$tax_query['terms'][] = $args['tag_id'];
 						}
 
@@ -912,7 +912,7 @@ class Post extends Indexable {
 					$args['tax_query']
 				);
 
-			} else {
+			} elseif ( empty( $args['tax_query'] ) ) { // Remove duplicate queries from Core's backwards compat feature of setting 'tag_id': https://github.com/WordPress/WordPress/blob/5d99107bf3ab35aa3dda82c6b3903f5717771335/wp-includes/class-wp-query.php#L2193
 				$args['tax_query'][] = array(
 					'taxonomy' => 'post_tag',
 					'terms'    => $args['tag_id'],

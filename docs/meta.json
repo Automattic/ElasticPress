@@ -11,9 +11,6 @@
     "indexables": {
         "title": "Indexables"
     },
-    "react": {
-        "title": "React Components"
-    },
     "security": {
         "title": "Security"
     },
@@ -25,8 +22,5 @@
     },
     "development": {
         "title": "Development"
-    },
-    "theme-integration": {
-        "title": "Theme Integration"
     }
 }

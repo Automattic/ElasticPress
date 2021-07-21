@@ -27,11 +27,11 @@ class SyncManager extends SyncManagerAbstract {
 	 * @since 3.1
 	 */
 	public function setup() {
-		if ( ! Elasticsearch::factory()->get_elasticsearch_version() ) {
+		if ( defined( 'WP_IMPORTING' ) && true === WP_IMPORTING ) {
 			return;
 		}
 
-		if ( ! $this->can_index_site() ) {
+		if ( ! Elasticsearch::factory()->get_elasticsearch_version() ) {
 			return;
 		}
 
@@ -51,10 +51,6 @@ class SyncManager extends SyncManagerAbstract {
 	 * @since 3.1
 	 */
 	public function action_sync_on_update( $term_id ) {
-		if ( $this->kill_sync() ) {
-			return;
-		}
-
 		if ( ! current_user_can( 'edit_term', $term_id ) && ! apply_filters( 'ep_sync_insert_permissions_bypass', false, $term_id, 'term' ) ) {
 			return;
 		}
@@ -96,22 +92,12 @@ class SyncManager extends SyncManagerAbstract {
 	 * @since 3.1
 	 */
 	public function action_sync_on_object_update( $object_id, $terms ) {
-		if ( $this->kill_sync() ) {
-			return;
-		}
-
 		if ( empty( $terms ) ) {
 			return;
 		}
 
 		foreach ( $terms as $term ) {
-			$term_info = term_exists( $term );
-
-			if ( ! $term_info ) {
-				continue;
-			}
-
-			$term = get_term( $term_info );
+			$term = get_term( $term );
 
 			if ( ! current_user_can( 'edit_term', $term->term_id ) ) {
 				return;
@@ -154,10 +140,6 @@ class SyncManager extends SyncManagerAbstract {
 	 * @since 3.1
 	 */
 	public function action_queue_meta_sync( $meta_id, $term_id ) {
-		if ( $this->kill_sync() ) {
-			return;
-		}
-
 		$this->sync_queue[ $term_id ] = true;
 	}
 
@@ -168,10 +150,6 @@ class SyncManager extends SyncManagerAbstract {
 	 * @since 3.1
 	 */
 	public function action_sync_on_delete( $term_id ) {
-		if ( $this->kill_sync() ) {
-			return;
-		}
-
 		if ( ! current_user_can( 'delete_term', $term_id ) && ! apply_filters( 'ep_sync_delete_permissions_bypass', false, $term_id, 'term' ) ) {
 			return;
 		}

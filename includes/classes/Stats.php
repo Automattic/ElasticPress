@@ -141,12 +141,13 @@ class Stats {
 		$site_indices      = $this->get_indices_for_site( $blog_id );
 
 		$indices = $this->remote_request_helper( '_cat/indices?format=json' );
+		$i       = 1;
 
 		if ( empty( $indices ) ) {
 			return;
 		}
 
-		// If the plugin is network activated we only want the data from the indexable WP indexes, not any others.
+		// if the plugin is network activated we only want the data from the indexable WP indexes, not any others
 		if ( $network_activated ) {
 			$indexable_sites = Utils\get_sites();
 			foreach ( $indexable_sites as $site ) {
@@ -155,10 +156,10 @@ class Stats {
 			}
 		}
 
-		// Filter the general list of indices to contain only the ones we care about.
+		// Filter the general list of indices to contain only the ones we care about
 		$filtered_indices = array_filter(
 			$indices,
-			function ( $index ) use ( $site_indices ) {
+			function( $index ) use ( $site_indices ) {
 				return in_array( $index['index'], $site_indices, true );
 			}
 		);
@@ -177,7 +178,7 @@ class Stats {
 		$filtered_indices = apply_filters( 'ep_index_health_stats_indices', $filtered_indices, $indices );
 
 		foreach ( $filtered_indices as $index ) {
-			$this->populate_index_stats( $index['index'], $index['health'] );
+			$this->populate_index_stats( $index['index'], $index['health'], $i ++ );
 		}
 	}
 
@@ -224,10 +225,11 @@ class Stats {
 	 *
 	 * @param string $index_name index name
 	 * @param string $health     index health status
+	 * @param int    $i          index unused value
 	 *
 	 * @since 3.x
 	 */
-	private function populate_index_stats( $index_name, $health ) {
+	private function populate_index_stats( $index_name, $health, $i ) {
 
 		if ( empty( $this->stats['indices'][ $index_name ] ) ) {
 			return;

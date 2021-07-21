@@ -30,59 +30,49 @@ class TestBase extends \WPAcceptance\PHPUnit\TestCase {
 		if ( ! $initialized ) {
 			$initialized = true;
 
+			/**
+			 * Delete all current indexes before we start
+			 */
+			$cluster_indexes = json_decode( $this->runCommand( 'wp elasticpress get-cluster-indexes' )['stdout'], true );
+
+			foreach ( $cluster_indexes as $index ) {
+				$this->runCommand( 'wp elasticpress delete-index --index-name=' . $index['index'] );
+			}
+
 			$this->indexes = json_decode( $this->runCommand( 'wp elasticpress get-indexes' )['stdout'], true );
 
 			/**
 			 * Set default feature settings
 			 */
-			$feature_settings = [
-				'search'            => [
-					'active'            => 1,
-					'highlight_enabled' => true,
-					'highlight_excerpt' => true,
-					'highlight_tag'     => 'mark',
-					'highlight_color'   => '#157d84',
-				],
-				'related_posts'     => [
-					'active' => 1,
-				],
-				'facets'            => [
-					'active' => 1,
-				],
-				'searchordering'    => [
-					'active' => 1,
-				],
-				'autosuggest'       => [
-					'active' => 1,
-				],
-				'woocommerce'       => [
-					'active' => 0,
-				],
-				'protected_content' => [
-					'active' => 0,
-				],
-				'users'             => [
-					'active' => 1,
-				],
-			];
-
-			// If not using EP.io, set the autosuggest endpoint.
-			$ep_host = $this->runCommand( "wp eval 'echo \ElasticPress\Utils\get_host();'" )['stdout'];
-			if ( ! preg_match( '#elasticpress\.io#i', $ep_host ) ) {
-				$ep_host = rtrim( $ep_host, '/\\' );
-				$ep_host = str_replace( 'host.docker.internal', '127.0.0.1', $ep_host );
-
-				$post_index = '';
-				foreach ( $this->indexes as $index ) {
-					if ( false !== strpos( $index, '-post' ) ) {
-						$post_index = $index;
-					}
-				}
-
-				$feature_settings['autosuggest']['endpoint_url'] = "{$ep_host}/{$post_index}/_search";
-			}
-
-			$this->updateFeatureSettings( $feature_settings );
+			$this->updateFeatureSettings(
+				[
+					'search'            => [
+						'active' => 1,
+					],
+					'related_posts'     => [
+						'active' => 1,
+					],
+					'facets'            => [
+						'active' => 1,
+					],
+					'searchordering'    => [
+						'active' => 1,
+					],
+					'autosuggest'       => [
+						'active' => 1,
+					],
+					'woocommerce'       => [
+						'active' => 0,
+					],
+					'protected_content' => [
+						'active'         => 0,
+						'force_inactive' => 1,
+					],
+					'users'             => [
+						'active' => 1,
+					],
+				]
+			);
 
 			/**
 			 * Set default weighting
@@ -91,39 +81,39 @@ class TestBase extends \WPAcceptance\PHPUnit\TestCase {
 				'post' => [
 					'post_title'   => [
 						'weight'  => 1,
-						'enabled' => true,
+						'enabled' => 1,
 					],
 					'post_content' => [
 						'weight'  => 1,
-						'enabled' => true,
+						'enabled' => 1,
 					],
 					'post_excerpt' => [
 						'weight'  => 1,
-						'enabled' => true,
+						'enabled' => 1,
 					],
 
 					'author_name'  => [
 						'weight'  => 0,
-						'enabled' => false,
+						'enabled' => 0,
 					],
 				],
 				'page' => [
 					'post_title'   => [
 						'weight'  => 1,
-						'enabled' => true,
+						'enabled' => 1,
 					],
 					'post_content' => [
 						'weight'  => 1,
-						'enabled' => true,
+						'enabled' => 1,
 					],
 					'post_excerpt' => [
 						'weight'  => 1,
-						'enabled' => true,
+						'enabled' => 1,
 					],
 
 					'author_name'  => [
 						'weight'  => 0,
-						'enabled' => false,
+						'enabled' => 0,
 					],
 				],
 			];
@@ -205,156 +195,25 @@ class TestBase extends \WPAcceptance\PHPUnit\TestCase {
 		$actor->typeInField( '#post-title-0', $data['title'] );
 
 		$actor->getPage()->type(
-			'.block-editor-default-block-appender__content',
+			'.editor-default-block-appender__content',
 			$data['content'],
 			[ 'delay' => 10 ]
 		);
 
 		usleep( 100 );
 
-		// Post Status.
-		if ( isset( $data['status'] ) && 'draft' === $data['status'] ) {
+		$actor->waitUntilElementVisible( '.editor-post-publish-panel__toggle' );
 
-			$actor->click( '.editor-post-save-draft' );
+		$actor->waitUntilElementEnabled( '.editor-post-publish-panel__toggle' );
 
-			$actor->waitUntilElementContainsText( 'Saved', '.editor-post-saved-state' );
+		$actor->click( '.editor-post-publish-panel__toggle' );
 
-		} else {
+		$actor->waitUntilElementVisible( '.editor-post-publish-button' );
 
-			$actor->waitUntilElementVisible( '.editor-post-publish-panel__toggle' );
+		$actor->waitUntilElementEnabled( '.editor-post-publish-button' );
 
-			$actor->waitUntilElementEnabled( '.editor-post-publish-panel__toggle' );
+		$actor->click( '.editor-post-publish-button' );
 
-			$actor->click( '.editor-post-publish-panel__toggle' );
-
-			// Some time we can't click the publish button using this method $actor->click( '.editor-post-publish-button' );
-			$actor->executeJavaScript( 'document.querySelector( ".editor-post-publish-button" ).click();' );
-
-			// $actor->waitUntilElementEnabled( '.editor-post-publish-button' );
-
-			// $actor->click( '.editor-post-publish-button' );
-
-			$actor->waitUntilElementVisible( '.components-snackbar' );
-		}
-	}
-
-	/**
-	 * Activate the plugin.
-	 *
-	 * @param \WPAcceptance\PHPUnit\Actor $actor   The actor.
-	 * @param string                      $slug    Plugin slug.
-	 * @param bool                        $network Multisite?
-	 */
-	protected function activatePlugin( $actor = null, $slug = 'elasticpress', $network = false ) {
-		if ( ! $actor ) {
-			$command = "wp plugin activate {$slug}";
-			if ( $network ) {
-				$command .= ' --network';
-			}
-			$this->runCommand( $command );
-			return;
-		}
-
-		if ( $network ) {
-			$actor->moveTo( '/wp-admin/network/plugins.php' );
-		} else {
-			$actor->moveTo( '/wp-admin/plugins.php' );
-		}
-
-		try {
-			$element = $actor->getElement( '[data-slug="' . $slug . '"] .activate a' );
-			if ( $element ) {
-				$actor->click( $element );
-				$actor->waitUntilElementVisible( '#message' );
-			}
-		} catch ( \Exception $e ) {}
-	}
-
-	/**
-	 * Deactivate the plugin.
-	 *
-	 * @param \WPAcceptance\PHPUnit\Actor $actor The actor.
-	 * @param string                      $slug  Plugin slug.
-	 * @param bool                        $network Multisite?
-	 */
-	protected function deactivatePlugin( $actor = null, $slug = 'elasticpress', $network = false ) {
-		if ( ! $actor ) {
-			$command = "wp plugin deactivate {$slug}";
-			if ( $network ) {
-				$command .= ' --network';
-			}
-			$this->runCommand( $command );
-			return;
-		}
-
-		if ( $network ) {
-			$actor->moveTo( '/wp-admin/network/plugins.php' );
-		} else {
-			$actor->moveTo( '/wp-admin/plugins.php' );
-		}
-
-		try {
-			$element = $actor->getElement( '[data-slug="' . $slug . '"] .deactivate a' );
-			if ( $element ) {
-				$actor->click( $element );
-				$actor->waitUntilElementVisible( '#message' );
-			}
-		} catch ( \Exception $e ) {}
-	}
-
-	/**
-	 * Check if we're using ElasticPress.io.
-	 *
-	 * @return boolean
-	 */
-	protected function isElasticPressIo() {
-		$ep_host = $this->runCommand( "wp eval 'echo \ElasticPress\Utils\get_host();'" )['stdout'];
-		return preg_match( '#elasticpress\.io#i', $ep_host );
-	}
-
-	/**
-	 * Helper function to check for total entries found in Debug Bar.
-	 *
-	 * @param integer $total
-	 * @param \WPAcceptance\PHPUnit\Actor $actor
-	 */
-	public function checkTotal( int $total, \WPAcceptance\PHPUnit\Actor $actor ) {
-		// Different ES versions will return it in different ways.
-		try {
-			$actor->seeText( '"total": ' . $total, '.query-results' );
-		} catch ( \Exception $e ) {
-			$actor->seeText( '"value": ' . $total, '.query-results' );
-		}
-	}
-
-	/**
-	 * Set the number of entries per cycle.
-	 *
-	 * @param integer $number
-	 * @param \WPAcceptance\PHPUnit\Actor $actor
-	 * @return string
-	 */
-	public function setPerIndexCycle( int $number, \WPAcceptance\PHPUnit\Actor $actor ) {
-		$actor->moveTo( 'wp-admin/admin.php?page=elasticpress-settings' );
-
-		$per_page = $actor->getElementAttribute( '#ep_bulk_setting', 'value' );
-
-		$actor->typeInField( '#ep_bulk_setting', (string) $number );
-
-		$actor->click( '#submit' );
-
-		return $per_page;
-	}
-
-	/**
-	 * Make sure a feature is enable before running tests that rely on it.
-	 *
-	 * @param string $feature Feature slug.
-	 */
-	public function maybeEnableFeature( $feature ) {
-		$cli_result = $this->runCommand( "wp elasticpress list-features {$feature}" )['stdout'];
-		if ( false === strpos( $cli_result, $feature ) ) {
-			$this->runCommand( "wp elasticpress activate-feature {$feature}" );
-		}
+		$actor->waitUntilElementVisible( '.components-notice' );
 	}
 }

@@ -214,14 +214,12 @@ return array(
 				'display_name'    => array(
 					'type'   => 'text',
 					'fields' => array(
-						'raw'      => array(
-							'type'         => 'keyword',
-							'ignore_above' => 10922,
+						'display_name' => array(
+							'type' => 'text',
 						),
-						'sortable' => array(
+						'raw'          => array(
 							'type'         => 'keyword',
 							'ignore_above' => 10922,
-							'normalizer'   => 'lowerasciinormalizer',
 						),
 					),
 				),

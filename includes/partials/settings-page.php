@@ -132,23 +132,8 @@ if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 									<label for="ep_username"><?php esc_html_e( 'Subscription Username', 'elasticpress' ); ?></label>
 								</th>
 								<td>
-									<?php
-									/**
-									 * Filter whether to show epio credentials fields in admin UI or not
-									 *
-									 * @hook ep_admin_show_credentials
-									 * @param  {boolean} $show True to show
-									 * @return {boolean} New value
-									 */
-									if ( apply_filters( 'ep_admin_show_credentials', true ) ) :
-										?>
-										<input <?php if ( defined( 'EP_CREDENTIALS' ) && EP_CREDENTIALS ) : ?>disabled<?php endif; ?> type="text" value="<?php echo esc_attr( $credentials['username'] ); ?>" name="ep_credentials[username]" id="ep_username">
-									<?php endif ?>
-									<?php if ( defined( 'EP_CREDENTIALS' ) && EP_CREDENTIALS ) : ?>
-										<legend class="description"><?php esc_html_e( 'Your Subscription Username is set in wp-config.php', 'elasticpress' ); ?></legend>
-									<?php else : ?>
-										<legend class="description"><?php esc_html_e( 'Plug in your subscription username here.', 'elasticpress' ); ?></legend>
-									<?php endif; ?>
+									<input type="text" value="<?php echo esc_attr( $credentials['username'] ); ?>" name="ep_credentials[username]" id="ep_username">
+									<legend class="description"><?php esc_html_e( 'Plug in your subscription username here.', 'elasticpress' ); ?></legend>
 								</td>
 							</tr>
 
@@ -156,23 +141,8 @@ if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 								<th scope="row">
 									<label for="ep_token"><?php esc_html_e( 'Subscription Token', 'elasticpress' ); ?></label></th>
 								<td>
-									<?php
-									/**
-									 * Filter whether to show epio credentials fields in admin UI or not
-									 *
-									 * @hook ep_admin_show_credentials
-									 * @param  {boolean} $show True to show
-									 * @return {boolean} New value
-									 */
-									if ( apply_filters( 'ep_admin_show_credentials', true ) ) :
-										?>
-										<input <?php if ( defined( 'EP_CREDENTIALS' ) && EP_CREDENTIALS ) : ?>disabled<?php endif; ?> type="text" value="<?php echo esc_attr( $credentials['token'] ); ?>" name="ep_credentials[token]" id="ep_token">
-									<?php endif ?>
-									<?php if ( defined( 'EP_CREDENTIALS' ) && EP_CREDENTIALS ) : ?>
-										<legend class="description"><?php esc_html_e( 'Your Subscription Token is set in wp-config.php', 'elasticpress' ); ?></legend>
-									<?php else : ?>
-										<legend class="description"><?php esc_html_e( 'Plug in your subscription token here.', 'elasticpress' ); ?></legend>
-									<?php endif; ?>
+									<input type="text" value="<?php echo esc_attr( $credentials['token'] ); ?>" name="ep_credentials[token]" id="ep_token">
+									<legend class="description"><?php esc_html_e( 'Plug in your subscription token here.', 'elasticpress' ); ?></legend>
 								</td>
 							</tr>
 						<?php endif; ?>

@@ -77,31 +77,16 @@ class Widget extends WP_Widget {
 		 * Get all the terms so we know if we should output the widget
 		 */
 		$terms = get_terms(
-			/**
-			 * Filter arguments passed to get_terms() while getting all possible terms for the facet widget.
-			 *
-			 * @since  3.5.0
-			 * @hook ep_facet_search_get_terms_args
-			 * @param  {array} $query Weighting query
-			 * @param  {string} $post_type Post type
-			 * @param  {array} $args WP Query arguments
-			 * @return  {array} New query
-			 */
-			apply_filters(
-				'ep_facet_search_get_terms_args',
-				[
-					'taxonomy'   => $taxonomy,
-					'hide_empty' => true,
-				],
-				$args,
-				$instance
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => true,
 			)
 		);
 
 		/**
-		 * Terms validity check
+		 * No terms!
 		 */
-		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		if ( 0 === $terms ) {
 			return;
 		}
 
@@ -186,8 +171,8 @@ class Widget extends WP_Widget {
 							}
 							?>
 							<div class="term selected level-<?php echo (int) $term->level; ?>" data-term-name="<?php echo esc_attr( strtolower( $term->name ) ); ?>" data-term-slug="<?php echo esc_attr( strtolower( $term_slug ) ); ?>">
-								<a href="<?php echo esc_attr( $feature->build_query_url( $new_filters ) ); ?>" rel="nofollow">
-									<div class="ep-checkbox checked" role="presentation"></div>
+								<a href="<?php echo esc_attr( $feature->build_query_url( $new_filters ) ); ?>">
+									<input type="checkbox" checked>
 									<?php echo esc_html( $term->name ); ?>
 								</a>
 							</div>
@@ -249,8 +234,8 @@ class Widget extends WP_Widget {
 								}
 								?>
 								<div class="term <?php if ( empty( $term->count ) ) : ?>empty-term<?php endif; ?> <?php if ( $selected ) : ?>selected<?php endif; ?> level-<?php echo (int) $term->level; ?>" data-term-name="<?php echo esc_attr( strtolower( $term->name ) ); ?>" data-term-slug="<?php echo esc_attr( strtolower( $term->slug ) ); ?>">
-									<a href="<?php echo esc_attr( $feature->build_query_url( $new_filters ) ); ?>" rel="nofollow">
-										<div class="ep-checkbox <?php if ( $selected ) : ?>checked<?php endif; ?>" role="presentation"></div>
+									<a href="<?php echo esc_attr( $feature->build_query_url( $new_filters ) ); ?>">
+										<input type="checkbox" <?php if ( $selected ) : ?>checked<?php endif; ?>>
 										<?php echo esc_html( $term->name ); ?>
 									</a>
 								</div>
@@ -278,37 +263,31 @@ class Widget extends WP_Widget {
 					$new_filters['taxonomies'][ $taxonomy ]['terms'][ $term->slug ] = true;
 					?>
 					<div class="term <?php if ( empty( $term->count ) ) : ?>empty-term<?php endif; ?> level-<?php echo (int) $term->level; ?>" data-term-name="<?php echo esc_attr( strtolower( $term->name ) ); ?>" data-term-slug="<?php echo esc_attr( strtolower( $term->slug ) ); ?>">
-						<a <?php if ( ! empty( $term->count ) ) : ?>href="<?php echo esc_attr( $feature->build_query_url( $new_filters ) ); ?>" rel="nofollow"<?php endif; ?>>
-							<div class="ep-checkbox" role="presentation"></div>
+						<a <?php if ( ! empty( $term->count ) ) : ?>href="<?php echo esc_attr( $feature->build_query_url( $new_filters ) ); ?>"<?php endif; ?>>
+							<input type="checkbox">
 							<?php echo esc_html( $term->name ); ?>
 						</a>
 					</div>
 				<?php endforeach; ?>
 			</div>
-			<?php $facet_html = ob_get_clean(); ?>
-
-			<?php
-			// phpcs:disable
-			/**
-			 * Filter facet search widget HTML
-			 *
-			 * @hook ep_facet_search_widget
-			 * @param  {string} $facet_html Widget HTML
-			 * @param  {array} $selected_filters Selected filters
-			 * @param  {array} $terms_by_slug Terms by slug
-			 * @param  {array} $outputted_terms Outputted $terms
-			 * @param  {string} $title Widget title
-			 * @return  {string} New HTML
-			 */
-			echo apply_filters( 'ep_facet_search_widget', $facet_html, $selected_filters, $terms_by_slug, $outputted_terms, $instance['title'] );
-			// phpcs:enable
-			?>
 		</div>
 		<?php
+		$facet_html = ob_get_clean();
 
-		// Enqueue Script & Styles
-		wp_enqueue_script( 'elasticpress-facets' );
-		wp_enqueue_style( 'elasticpress-facets' );
+		// phpcs:disable
+		/**
+		 * Filter facet search widget HTML
+		 *
+		 * @hook ep_facet_search_widget
+		 * @param  {string} $facet_html Widget HTML
+		 * @param  {array} $selected_filters Selected filters
+		 * @param  {array} $terms_by_slug Terms by slug
+		 * @param  {array} $outputted_terms Outputted $terms
+		 * @param  {string} $title Widget title
+		 * @return  {string} New HTML
+		 */
+		echo apply_filters( 'ep_facet_search_widget', $facet_html, $selected_filters, $terms_by_slug, $outputted_terms, $instance['title'] );
+		// phpcs:enable
 
 		echo wp_kses_post( $args['after_widget'] );
 	}

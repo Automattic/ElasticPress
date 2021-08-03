@@ -856,7 +856,7 @@ class Post extends Indexable {
 		 */
 
 		// Find root level taxonomies.
-		if ( empty( $args['tax_query'] ) ) { // Remove duplicate queries from Core's backwards compat feature of setting 'category_name', 'cat': https://github.com/WordPress/WordPress/blob/5d99107bf3ab35aa3dda82c6b3903f5717771335/wp-includes/class-wp-query.php#L2193
+		if ( empty( $args['tax_query'] ) ) {
 			if ( isset( $args['category_name'] ) && ! empty( $args['category_name'] ) ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => 'category',
@@ -912,7 +912,7 @@ class Post extends Indexable {
 					$args['tax_query']
 				);
 
-			} elseif ( empty( $args['tax_query'] ) ) { // Remove duplicate queries from Core's backwards compat feature of setting 'tag_id': https://github.com/WordPress/WordPress/blob/5d99107bf3ab35aa3dda82c6b3903f5717771335/wp-includes/class-wp-query.php#L2193
+			} elseif ( empty( $args['tax_query'] ) ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => 'post_tag',
 					'terms'    => $args['tag_id'],

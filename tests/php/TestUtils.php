@@ -172,13 +172,8 @@ class TestUtils extends BaseTestCase {
 	 */
 	public function testIsIndexing() {
 
-		if ( is_multisite() ) {
-			update_site_option( 'ep_index_meta', [] );
-			set_site_transient( 'ep_wpcli_sync', true, 900 );
-		} else {
-			update_option( 'ep_index_meta', [] );
-			set_transient( 'ep_wpcli_sync', true, 900 );
-		}
+		update_option( 'ep_index_meta', [] );
+		set_transient( 'ep_wpcli_sync', true, 900 );
 
 		$this->assertTrue( ElasticPress\Utils\is_indexing() );
 

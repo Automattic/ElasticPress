@@ -593,11 +593,7 @@ class Command extends WP_CLI_Command {
 		 */
 		do_action( 'ep_wp_cli_pre_index', $args, $assoc_args );
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-			set_site_transient( 'ep_wpcli_sync', true, $this->transient_expiration );
-		} else {
-			set_transient( 'ep_wpcli_sync', true, $this->transient_expiration );
-		}
+		set_transient( 'ep_wpcli_sync', true, $this->transient_expiration );
 
 		timer_start();
 
@@ -1275,15 +1271,9 @@ class Command extends WP_CLI_Command {
 	 */
 	private function index_occurring() {
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-			$dashboard_syncing = get_site_option( 'ep_index_meta' );
-			$wpcli_syncing     = get_site_transient( 'ep_wpcli_sync' );
-		} else {
-			$dashboard_syncing = get_option( 'ep_index_meta' );
-			$wpcli_syncing     = get_transient( 'ep_wpcli_sync' );
-		}
+		$is_indexing = Utils\is_indexing();
 
-		if ( $dashboard_syncing || $wpcli_syncing ) {
+		if ( $is_indexing ) {
 			WP_CLI::error( esc_html__( 'An index is already occuring. Try again later.', 'elasticpress' ) );
 		}
 	}
@@ -1298,11 +1288,7 @@ class Command extends WP_CLI_Command {
 	 * @since 2.2
 	 */
 	private function reset_transient( $items_indexed, $total_items, $slug ) {
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-			set_site_transient( 'ep_wpcli_sync', array( $items_indexed, $total_items, $slug ), $this->transient_expiration );
-		} else {
-			set_transient( 'ep_wpcli_sync', array( $items_indexed, $total_items, $slug ), $this->transient_expiration );
-		}
+		set_transient( 'ep_wpcli_sync', array( $items_indexed, $total_items, $slug ), $this->transient_expiration );
 	}
 
 	/**
@@ -1311,15 +1297,9 @@ class Command extends WP_CLI_Command {
 	 * @since 3.1
 	 */
 	private function delete_transient() {
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-			delete_site_transient( 'ep_wpcli_sync' );
-			delete_site_transient( 'ep_cli_sync_progress' );
-			delete_site_transient( 'ep_wpcli_sync_interrupted' );
-		} else {
-			delete_transient( 'ep_wpcli_sync' );
-			delete_transient( 'ep_cli_sync_progress' );
-			delete_transient( 'ep_wpcli_sync_interrupted' );
-		}
+		delete_transient( 'ep_wpcli_sync' );
+		delete_transient( 'ep_cli_sync_progress' );
+		delete_transient( 'ep_wpcli_sync_interrupted' );
 	}
 
 	/**
@@ -1374,17 +1354,8 @@ class Command extends WP_CLI_Command {
 			'total_items'   => -1,
 		);
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-
-			$dashboard_syncing = get_site_option( 'ep_index_meta' );
-			$wpcli_syncing     = get_site_transient( 'ep_wpcli_sync' );
-
-		} else {
-
-			$dashboard_syncing = get_option( 'ep_index_meta' );
-			$wpcli_syncing     = get_transient( 'ep_wpcli_sync' );
-
-		}
+		$dashboard_syncing = get_option( 'ep_index_meta' );
+		$wpcli_syncing     = get_transient( 'ep_wpcli_sync' );
 
 		if ( $dashboard_syncing || $wpcli_syncing ) {
 

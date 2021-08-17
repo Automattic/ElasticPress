@@ -159,6 +159,8 @@ function sanitize_credentials( $credentials ) {
  * @return boolean
  */
 function is_indexing() {
+	// We are using a per-site block (instead of the network site block on trunk) to
+	// be able to index multiple sites on a network
 	$index_meta = get_option( 'ep_index_meta', false );
 	$wpcli_sync = get_transient( 'ep_wpcli_sync' );
 

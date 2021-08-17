@@ -593,6 +593,8 @@ class Command extends WP_CLI_Command {
 		 */
 		do_action( 'ep_wp_cli_pre_index', $args, $assoc_args );
 
+		// We are using a per-site block (instead of the network site block on trunk) to
+		// be able to index multiple sites on a network
 		set_transient( 'ep_wpcli_sync', true, $this->transient_expiration );
 
 		timer_start();
@@ -1354,6 +1356,8 @@ class Command extends WP_CLI_Command {
 			'total_items'   => -1,
 		);
 
+		// We are using a per-site block (instead of the network site block on trunk) to
+		// be able to index multiple sites on a network
 		$dashboard_syncing = get_option( 'ep_index_meta' );
 		$wpcli_syncing     = get_transient( 'ep_wpcli_sync' );
 

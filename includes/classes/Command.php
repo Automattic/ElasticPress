@@ -1512,7 +1512,7 @@ class Command extends WP_CLI_Command {
 		if ( empty( \ElasticPress\Utils\get_indexing_status() ) ) {
 			WP_CLI::warning( esc_html__( 'There is no indexing operation running.', 'elasticpress' ) );
 		} else {
-			WP_CLI::line( esc_html__( 'Stoping indexing...', 'elasticpress' ) );
+			WP_CLI::line( esc_html__( 'Stopping indexing...', 'elasticpress' ) );
 
 			if ( isset( $indexing_status['method'] ) && 'cli' === $indexing_status['method'] ) {
 				set_transient( 'ep_wpcli_sync_interrupted', true, 5 );

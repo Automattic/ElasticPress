@@ -605,8 +605,8 @@ class Synonyms {
 		}
 
 		$screen = get_current_screen();
-		$base = defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ? 'admin_page_elasticpress-synonyms' : 'elasticpress_page_elasticpress-synonyms';
-		
+		$base   = defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ? 'admin_page_elasticpress-synonyms' : 'elasticpress_page_elasticpress-synonyms';
+
 		return $base === $screen->base;
 	}
 

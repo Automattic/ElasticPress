@@ -12,6 +12,10 @@ A few sentences describing the overall goals of the Pull Request.
 Should include any special considerations, decisions, and links to relevant GitHub issues.
 
 Please don't include internal or private links :)
+
+If the change can be of benefit to upstream, please PR there as well: https://github.com/10up/ElasticPress.
+If it's VIP-specific, please denote with a comment prefixed by "VIP: " explaining the why behind the discrepancy.
+i.e. "// VIP: Removed block where advanced pagination cannot not be used with nobulk"
 -->
 
 ## Checklist

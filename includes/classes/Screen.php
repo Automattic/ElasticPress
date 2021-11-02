@@ -42,7 +42,6 @@ class Screen {
 	 * @since 3.0
 	 */
 	public function determine_screen() {
-		// If in network mode, don't output notice in admin and vice-versa.
 		if ( ( ! defined( 'EP_IS_NETWORK' ) || ! EP_IS_NETWORK ) && is_network_admin() ) {
 			return false;
 		}

@@ -88,6 +88,7 @@ class TestScreen extends BaseTestCase {
 
 		ElasticPress\Screen::factory()->determine_screen();
 
+		// VIP: We changed logic for determine_screen() to load, so do not test for multisite
 		$this->assertSame( 'install', ElasticPress\Screen::factory()->get_current_screen() );
 	}
 

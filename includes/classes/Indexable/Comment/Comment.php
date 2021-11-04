@@ -85,6 +85,10 @@ class Comment extends Indexable {
 		 */
 		if ( isset( $query_vars['offset'] ) ) {
 			$formatted_args['from'] = (int) $query_vars['offset'];
+			// VIP: If we are using the default max result window value for size, we should account for offset
+			if ( empty( $query_vars['number'] ) ) {
+				$formatted_args['size'] -= $formatted_args['from'];
+			}
 		}
 
 		/**

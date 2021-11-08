@@ -31,6 +31,7 @@ class SyncManager extends SyncManagerAbstract {
 	 */
 	public $indexable_slug = 'post';
 
+	protected $terms = [];
 	/**
 	 * Setup actions and filters
 	 *
@@ -53,6 +54,9 @@ class SyncManager extends SyncManagerAbstract {
 		add_action( 'updated_post_meta', array( $this, 'action_queue_meta_sync' ), 10, 4 );
 		add_action( 'added_post_meta', array( $this, 'action_queue_meta_sync' ), 10, 4 );
 		add_action( 'deleted_post_meta', array( $this, 'action_queue_meta_sync' ), 10, 4 );
+		// Before the term is edited
+		add_action( 'edit_terms', array( $this, 'action_edit_terms' ), 10, 2 );
+		// After the term is edited 
 		add_action( 'edited_term', array( $this, 'action_edited_term' ), 10, 3 );
 		add_action( 'set_object_terms', array( $this, 'action_set_object_terms' ), 10, 6 );
 		add_action( 'wp_initialize_site', array( $this, 'action_create_blog_index' ) );
@@ -152,6 +156,17 @@ class SyncManager extends SyncManagerAbstract {
 		}
 	}
 
+
+	/**
+	 * Save a copy of current term that's being edited to be compared against the term after edit.
+	 *
+	 * @param [type] $term_id
+	 * @param [type] $taxonomy
+	 * @return void
+	 */
+	public function action_edit_terms( $term_id, $taxonomy ) {
+		$this->terms[ "{$term_id}_{$taxonomy}" ] = get_term( $term_id, $taxonomy );
+	}
 	/**
 	 * When a term is updated, re-index all posts attached to that term
 	 *
@@ -168,14 +183,31 @@ class SyncManager extends SyncManagerAbstract {
 			return;
 		}
 
+		// Whether to skip current post, default to true (skip)
+		// unless a field we care about is modified.
+		$should_skip = true;
+
+		$freshened_term = get_term( $term_id, $taxonomy );
+
+		if ( isset( $this->terms[ "{$term_id}_{$taxonomy}" ] ) ) {
+			foreach( [ 'name', 'slug', 'parent', 'term_taxonomy_id' ] as $field ) {
+				if ( $freshened_term->$field !== $this->terms[ "{$term_id}_{$taxonomy}" ]->$field ) {
+					$should_skip = false;
+					break;
+				}
+			}
+		// We can't reliably determine, let's index.
+		} else {
+			$should_skip = false;
+		}
 		/**
 		 *  Filter to allow skipping this action in case of custom handling
 		 *
 		 *  @hook ep_skip_action_edited_term
-		 *  @param {bool} $skip Current value of whether to skip running action_edited_term or not
+		 *  @param {bool} $should_skip Current value of whether to skip running action_edited_term or not
 		 *  @return {bool}  New value of whether to skip running action_edited_term or not
 		 */
-		if ( apply_filters( 'ep_skip_action_edited_term', false, $term_id, $tt_id, $taxonomy ) ) {
+		if ( apply_filters( 'ep_skip_action_edited_term', $should_skip, $term_id, $tt_id, $taxonomy ) ) {
 			return;
 		}
 

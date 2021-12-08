@@ -728,6 +728,9 @@ class User extends Indexable {
 			$args['order'] = 'desc';
 		}
 
+		$orderby_args = sanitize_sql_orderby( "{$args['orderby']} {$args['order']}" );
+		$orderby      = $orderby_args ? sprintf( 'ORDER BY %s', $orderby_args ) : '';
+
 		/**
 		 * Sanitize the ORDER BY clause
 		 */
@@ -741,9 +744,8 @@ class User extends Indexable {
 		 * The $wpdb->prepare will quote placeholders.
 		 * We are sanitizing orderby in advance and putting it as a variable to avoid quotes.
 		 */
-		// @codingStandardsIgnoreStart
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared  
 		$objects = $wpdb->get_results( $wpdb->prepare( "SELECT SQL_CALC_FOUND_ROWS ID FROM {$wpdb->users} {$orderby} LIMIT %d, %d", (int) $args['offset'], (int) $args['number'] ) );
-		// @codingStandardsIgnoreStop
 
 		return [
 			'objects'       => $objects,

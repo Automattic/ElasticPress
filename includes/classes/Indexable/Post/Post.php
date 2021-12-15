@@ -307,18 +307,36 @@ class Post extends Indexable {
 	 * @return string|WP_Error|false $version
 	 */
 	public function determine_mapping_version() {
-		$index   = $this->get_index_name();
-		$mapping = Elasticsearch::factory()->get_mapping( $index );
+		$version = get_transient( 'ep_post_mapping_version' );
 
-		if ( empty( $mapping ) ) {
-			return new \WP_Error( 'ep_failed_mapping_version', esc_html__( 'Error while fetching the mapping version.', 'elasticpress' ) );
+		if ( empty( $version ) ) {
+			$index   = $this->get_index_name();
+			$mapping = Elasticsearch::factory()->get_mapping( $index );
+
+			if ( empty( $mapping ) ) {
+				return new \WP_Error( 'ep_failed_mapping_version', esc_html__( 'Error while fetching the mapping version.', 'elasticpress' ) );
+			}
+
+			if ( ! isset( $mapping[ $index ] ) ) {
+				return false;
+			}
+
+			$version = $this->determine_mapping_version_based_on_existing( $mapping, $index );
+
+			set_transient(
+				'ep_post_mapping_version',
+				$version,
+				/**
+				 * Filter the post mapping version cache expiration.
+				 *
+				 * @hook ep_post_mapping_version_cache_expiration
+				 * @since 3.6.5
+				 * @param  {int} $version Time in seconds for the transient expiration
+				 * @return {int} New time
+				 */
+				apply_filters( 'ep_post_mapping_version_cache_expiration', DAY_IN_SECONDS )
+			);
 		}
-
-		if ( ! isset( $mapping[ $index ] ) ) {
-			return false;
-		}
-
-		$version = $this->determine_mapping_version_based_on_existing( $mapping, $index );
 
 		/**
 		 * Filter the mapping version for posts.
@@ -339,6 +357,8 @@ class Post extends Indexable {
 	 */
 	public function put_mapping() {
 		$mapping = $this->build_mapping();
+
+		delete_transient( 'ep_post_mapping_version' );
 
 		return Elasticsearch::factory()->put_mapping( $this->get_index_name(), $mapping );
 	}
@@ -1011,11 +1031,6 @@ class Post extends Indexable {
 		);
 
 		foreach ( $taxonomies as $tax_slug => $tax ) {
-			// VIP: check agains our protected parameters. TODO: We should move that out to `ep_post_tax_excluded_wp_query_root_check` filter and outside of EP code
-			if ( 'ep_custom_result' === $tax_slug || $this->is_protected_parameter( $tax_slug ) ) {
-				continue;
-			}
-
 			if ( $tax->query_var && ! empty( $args[ $tax->query_var ] ) && ! in_array( $tax->name, $excluded_tax_from_root_check, true ) ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => $tax_slug,
@@ -2024,89 +2039,6 @@ class Post extends Indexable {
 		return $orderbys;
 	}
 
-	/**
-	 * Check if a value matches a protected parameter
-	 *
-	 * @see https://developer.wordpress.org/reference/classes/wp_query/#parameters List of protected parameters
-	 *
-	 * @param string $value The value to test
-	 * @since 3.4
-	 * @return bool
-	 */
-	private function is_protected_parameter( $value ) {
-		if ( ! is_string( $value ) ) {
-			return false;
-		}
-
-		$protected_parameter_list = array(
-			'author',
-			'author__in',
-			'author__not_in',
-			'author_id',
-			'author_name',
-			'cache_results',
-			'cat',
-			'category__and',
-			'category__in',
-			'category__not_in',
-			'category_name',
-			'comment_count',
-			'date_query',
-			'day',
-			'fields',
-			'has_password',
-			'hour',
-			'ignore_sticky_posts',
-			'm',
-			'meta_compare',
-			'meta_key',
-			'meta_query',
-			'meta_value',
-			'meta_value_num',
-			'minute',
-			'monthnum',
-			'name',
-			'nopaging',
-			'offset',
-			'order',
-			'orderby',
-			'p',
-			'page',
-			'page_id',
-			'paged',
-			'pagename',
-			'perm',
-			'post__in',
-			'post__not_in',
-			'post_mime_type',
-			'post_name__in',
-			'post_parent',
-			'post_parent__in',
-			'post_parent__not_in',
-			'post_password',
-			'post_status',
-			'post_type',
-			'posts_per_archive_page',
-			'posts_per_page',
-			's',
-			'second',
-			'tag',
-			'tag__and',
-			'tag__in',
-			'tag__not_in',
-			'tag_id',
-			'tag_slug__and',
-			'tag_slug__in',
-			'tax',
-			'tax_query',
-			'update_post_meta_cache',
-			'update_post_term_cache',
-			'w',
-			'year',
-		);
-
-		return in_array( $value, $protected_parameter_list, true );
-	}
 	/**
 	 * Given a mapping content, try to determine the version used.
 	 *

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-$base_url = ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) ? admin_url( 'network/admin.php?page=' ) : admin_url( 'admin.php?page=' );
+$base_url = admin_url( 'admin.php?page=' ); // VIP: The network menu is disabled, go to the site menu.
 ?>
 
 <div class="ep-header-menu">

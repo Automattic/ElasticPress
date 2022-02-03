@@ -978,7 +978,7 @@ function action_admin_menu() {
 
 	add_menu_page(
 		'ElasticPress',
-		'ElasticPress',
+		'Search', // VIP: Rename page menu.
 		$capability,
 		'elasticpress',
 		__NAMESPACE__ . '\resolve_screen',
@@ -987,7 +987,7 @@ function action_admin_menu() {
 
 	add_submenu_page(
 		'elasticpress',
-		esc_html__( 'ElasticPress Features', 'elasticpress' ),
+		esc_html__( 'Search Features', 'elasticpress' ), // VIP: Rename page menu.
 		esc_html__( 'Features', 'elasticpress' ),
 		$capability,
 		'elasticpress',

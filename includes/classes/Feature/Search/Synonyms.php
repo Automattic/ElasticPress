@@ -605,7 +605,8 @@ class Synonyms {
 		}
 
 		$screen = get_current_screen();
-		return ( 'elasticpress_page_elasticpress-synonyms' === $screen->base );
+
+		return ( 'enterprise-search_page_elasticpress-synonyms' === $screen->base ); // VIP: Since we renamed the menu to "Enterprise Search", it will have a different screen base slug.
 	}
 
 	/**

@@ -29,7 +29,7 @@ $base_url = ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) ? admin_url( 'networ
 				<a class="dashicons start-sync dashicons-update" title="<?php esc_attr_e( 'Start Sync', 'elasticpress' ); ?>" aria-label="<?php esc_attr_e( 'Start Sync', 'elasticpress' ); ?>"></a>
 			<?php endif; ?>
 		<?php endif; ?>
-		<a href="<?php echo esc_url( $base_url . 'elasticpress-settings' ); ?>" class="dashicons dashicons-admin-generic" title="<?php esc_attr_e( 'Settings', 'elasticpress' ); ?>" aria-label="<?php esc_attr_e( 'Settings', 'elasticpress' ); ?>"></a>
+		<!-- // VIP: Remove Settings button. -->
 	</div>
 
 	<div class="progress-bar"></div>

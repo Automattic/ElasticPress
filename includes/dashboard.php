@@ -977,8 +977,8 @@ function action_admin_menu() {
 	}
 
 	add_menu_page(
-		'ElasticPress',
-		'Search', // VIP: Rename page menu.
+		'Enterprise Search', // VIP: Rename page title
+		'Enterprise Search', // VIP: Rename page menu.
 		$capability,
 		'elasticpress',
 		__NAMESPACE__ . '\resolve_screen',

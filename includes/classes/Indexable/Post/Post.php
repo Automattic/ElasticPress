@@ -61,7 +61,7 @@ class Post extends Indexable {
 			'post_status'         => $this->get_indexable_post_status(),
 			'offset'              => 0,
 			'ignore_sticky_posts' => true,
-			'orderby'             => 'ID',
+			'orderby'             => $args['orderby'] ? $args['orderby'] : 'ID',
 			'order'               => 'desc',
 			'no_found_rows'       => true,
 			'ep_indexing_advanced_pagination' => true,
@@ -96,7 +96,7 @@ class Post extends Indexable {
 		if ( $args['ep_indexing_advanced_pagination'] ) {
 			$args = array_merge( $args, [
 				'suppress_filters' => false,
-				'orderby'          => 'ID',
+				'orderby'          => $args['orderby'] ? $args['orderby'] : 'ID',
 				'order'            => 'DESC',
 				'paged'            => 1,
 				'offset'           => 0,

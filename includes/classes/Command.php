@@ -1129,9 +1129,10 @@ class Command extends WP_CLI_Command {
 				break;
 			}
 
-			// VIP: Pass in $last_processed_object_id independent of nobulk
+			// VIP: Pass in $last_processed_object_id independent of nobulk and track it in an option for long indexing processes that may get killed
 			$last_object_array_key    = array_keys( $query['objects'] )[ count( $query['objects'] ) - 1 ];
 			$last_processed_object_id = $query['objects'][ $last_object_array_key ]->ID;
+			update_option( 'vip_es_index_last_processed_id', $last_processed_object_id );
 
 			if ( ! $no_bulk ) {
 				WP_CLI::log( sprintf( esc_html__( 'Processed %1$d/%2$d. Last Object ID: %3$d', 'elasticpress' ), (int) ( $synced + count( $failed_objects ) ), (int) $query['total_objects'], (int) $last_processed_object_id ) );

@@ -17,8 +17,7 @@ $base_url = admin_url( 'admin.php?page=' ); // VIP: The network menu is disabled
 ?>
 
 <div class="ep-header-menu">
-	<a href="<?php echo esc_url( $base_url . 'elasticpress' ); ?>"><img width="250" src="<?php echo esc_url( plugins_url( '/images/vip-logo.svg', // VIP: Update header image
-	dirname( __DIR__ ) ) ); ?>"></a>
+	<a href="<?php echo esc_url( $base_url . 'elasticpress' ); ?>"><img width="250" src="<?php echo esc_url( plugins_url( '/images/vip-logo.svg', dirname( __DIR__ ) ) ); ?>"></a> <!-- // VIP: Update header image -->
 
 	<div class="icons">
 		<span class="sync-status"></span>

@@ -22,32 +22,18 @@ class Renderer {
 	/**
 	 * Output the widget or block HTML.
 	 *
-	 * @param array $args     Widget args
+	 * @param array $args Widget args
 	 * @param array $instance Instance settings
 	 */
 	public function render( $args, $instance ) {
 		global $wp_query;
 
-		$args     = wp_parse_args(
-			$args,
-			[
-				'before_widget' => '',
-				'before_title'  => '',
-				'after_title'   => '',
-				'after_widget'  => '',
-			]
-		);
-		$instance = wp_parse_args(
-			$instance,
-			[
-				'title' => '',
-			]
-		);
-
 		$feature = Features::factory()->get_registered_feature( 'facets' );
 
-		if ( $wp_query->get( 'ep_facet', false ) && ! $feature->is_facetable( $wp_query ) ) {
-			return false;
+		if ( $wp_query->get( 'ep_facet', false ) ) {
+			if ( ! $feature->is_facetable( $wp_query ) ) {
+				return false;
+			}
 		}
 
 		$es_success = ( ! empty( $wp_query->elasticsearch_success ) ) ? true : false;
@@ -63,11 +49,10 @@ class Renderer {
 		$taxonomy = $instance['facet'];
 
 		if ( ! is_search() ) {
+			$post_type = $wp_query->get( 'post_type' );
 
-			if ( is_tax() ) {
-				$post_type = get_taxonomy( get_queried_object()->taxonomy )->object_type;
-			} else {
-				$post_type = $wp_query->get( 'post_type' ) ? $wp_query->get( 'post_type' ) : 'post';
+			if ( empty( $post_type ) ) {
+				$post_type = 'post';
 			}
 
 			if ( ! is_object_in_taxonomy( $post_type, $taxonomy ) ) {

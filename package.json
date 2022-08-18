@@ -20,7 +20,7 @@
     "build": "10up-toolkit build",
     "watch": "10up-toolkit start",
     "lint-release": "npm install && composer install && npm run lint",
-    "lint-js": "10up-toolkit lint-js assets/js tests/cypress",
+    "lint-js": "10up-toolkit lint-js assets/js",
     "lint-php": "composer run lint",
     "format-js": "10up-toolkit format-js assets/js",
     "lint": "npm run lint-style && npm run lint-js && npm run lint-php",

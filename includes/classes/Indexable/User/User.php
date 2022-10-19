@@ -218,8 +218,6 @@ class User extends Indexable {
 
 		if ( ! empty( $meta_queries ) ) {
 			$filter['bool']['must'][] = $this->build_meta_query( $meta_queries );
-
-			$use_filters = true;
 		}
 
 		/**

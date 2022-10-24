@@ -951,7 +951,9 @@ class Command extends WP_CLI_Command {
 	 * @since 3.1
 	 */
 	private function delete_transient() {
-		delete_transient( 'ep_wpcli_sync' );
+		\ElasticPress\IndexHelper::factory()->clear_index_meta();
+
+		// VIP: We're not using network transients, but just per-site transients
 		delete_transient( 'ep_cli_sync_progress' );
 		delete_transient( 'ep_wpcli_sync_interrupted' );
 	}

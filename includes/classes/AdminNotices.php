@@ -252,13 +252,9 @@ class AdminNotices {
 			$url = admin_url( 'admin.php?page=elasticpress&do_sync' );
 		}
 
-		if ( defined( 'EP_DASHBOARD_SYNC' ) && ! EP_DASHBOARD_SYNC ) {
-			$html = esc_html__( 'Dashboard sync is disabled. The new version of ElasticPress requires that you delete all data and start a fresh sync using WP-CLI.', 'elasticpress' );
-		} else {
-			$html = sprintf( __( 'The new version of ElasticPress requires that you <a href="%s">delete all data and start a fresh sync</a>.', 'elasticpress' ), esc_url( $url ) );
-		}
+		$html = '';
 
-		$notice = esc_html__( 'Please note that some ElasticPress functionality may be impaired and/or content may not be searchable until the full sync has been performed.', 'elasticpress' );
+		$notice = '';
 
 		return [
 			'html'    => '<span class="dashicons dashicons-warning"></span> ' . $html . ' ' . $notice,

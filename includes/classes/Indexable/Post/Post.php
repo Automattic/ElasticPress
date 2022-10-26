@@ -1381,7 +1381,7 @@ class Post extends Indexable {
 		$search_fields = apply_filters( 'ep_search_fields', $search_fields, $args );
 
 		$default_algorithm_version       = '3.5';
-		$search_algorithm_version_option = ElasticPress\Utils\get_option( 'ep_search_algorithm_version', $default_algorithm_version );
+		$search_algorithm_version_option = \ElasticPress\Utils\get_option( 'ep_search_algorithm_version', $default_algorithm_version );
 
 		/**
 		 * Filter the algorithm version to be used.

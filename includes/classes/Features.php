@@ -8,6 +8,8 @@
 
 namespace ElasticPress;
 
+use ElasticPress\Utils as Utils;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -105,8 +107,8 @@ class Features {
 
 		$original_state = $feature->is_active();
 
-		// VIP: Every site should have its own option, rather than a network one.
-		$feature_settings = get_option( 'ep_feature_settings', [] );
+		$feature_settings = Utils\get_option( 'ep_feature_settings', [] );
+		// VIP: Backfill option
 		if ( function_exists( 'vip_maybe_backfill_ep_option' ) ) { // TODO: Remove
 			$feature_settings = \vip_maybe_backfill_ep_option( $feature_settings, 'ep_feature_settings' );
 		}
@@ -181,11 +183,7 @@ class Features {
 		 * Save our current requirement statuses for later
 		 */
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-			$old_requirement_statuses = get_site_option( 'ep_feature_requirement_statuses', false );
-		} else {
-			$old_requirement_statuses = get_option( 'ep_feature_requirement_statuses', false );
-		}
+		$old_requirement_statuses = Utils\get_option( 'ep_feature_requirement_statuses', false );
 
 		$new_requirement_statuses = [];
 
@@ -208,8 +206,8 @@ class Features {
 		 * If feature settings aren't created, let's create them and finish
 		 */
 
-		// VIP: Every site should have its own option, rather than a network one.
-		$feature_settings = get_option( 'ep_feature_settings', false );
+		$feature_settings = Utils\get_option( 'ep_feature_settings', false );
+		// VIP: Backfill option
 		if ( function_exists( 'vip_maybe_backfill_ep_option' ) ) { // TODO: Remove
 			$feature_settings = \vip_maybe_backfill_ep_option( $feature_settings, 'ep_feature_settings' );
 		}

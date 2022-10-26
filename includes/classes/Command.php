@@ -138,8 +138,8 @@ class Command extends WP_CLI_Command {
 			WP_CLI::error( esc_html__( 'No feature with that slug is registered', 'elasticpress' ) );
 		}
 
-		// VIP: Every site should have its own option, rather than a network one.
-		$active_features = get_option( 'ep_feature_settings', [] );
+		$active_features = Utils\get_option( 'ep_feature_settings', [] );
+		// VIP: Backfill option
 		if ( function_exists( 'vip_maybe_backfill_ep_option' ) ) { // TODO: Remove
 			$active_features = \vip_maybe_backfill_ep_option( $active_features, 'ep_feature_settings' );
 		}
@@ -171,8 +171,8 @@ class Command extends WP_CLI_Command {
 	public function list_features( $args, $assoc_args ) {
 
 		if ( empty( $assoc_args['all'] ) ) {
-			// VIP: Every site should have its own option, rather than a network one.
-			$features = get_option( 'ep_feature_settings', [] );
+			$features = Utils\get_option( 'ep_feature_settings', [] );
+			// VIP: Backfill feature option
 			if ( function_exists( 'vip_maybe_backfill_ep_option' ) ) { // TODO: Remove
 				$features = \vip_maybe_backfill_ep_option( $features, 'ep_feature_settings' );
 			}
@@ -1228,11 +1228,7 @@ class Command extends WP_CLI_Command {
 	 * @param array $assoc_args Associative CLI args.
 	 */
 	public function get_search_algorithm_version( $args, $assoc_args ) {
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-			$value = get_site_option( 'ep_search_algorithm_version', '' );
-		} else {
-			$value = get_option( 'ep_search_algorithm_version', '' );
-		}
+		$value = Utils\get_option( 'ep_search_algorithm_version', '' );
 
 		if ( empty( $value ) ) {
 			WP_CLI::line( 'default' );

@@ -12,33 +12,42 @@ use ElasticPress\Features as Features;
 /**
  * Facet test class
  */
-class TestFacets extends BaseTestCase {
-
+class TestFacet extends BaseTestCase {
 	/**
-	 * Setup each test.
+	 * Test facet type registration
 	 *
-	 * @since 3.6.0
+	 * @since 4.3.0
+	 * @group facets
 	 */
-	public function setUp() {
-		parent::setUp();
-	}
+	public function testFacetTypeRegistration() {
+		$facet_type = $this->getMockForAbstractClass( '\ElasticPress\Feature\Facets\FacetType' );
+		$facet_type->expects( $this->exactly( 1 ) )->method( 'setup' );
 
-	/**
-	 * Clean up after each test.
-	 *
-	 * @since 3.6.0
-	 */
-	public function tearDown() {
-		parent::tearDown();
-	}
+		$register_facet_type = function( $types ) use ( $facet_type ) {
+			$types['test_custom'] = get_class( $facet_type );
+			return $types;
+		};
 
+		add_filter( 'ep_facet_types', $register_facet_type );
+
+		$facets = new \ElasticPress\Feature\Facets\Facets();
+
+		$this->assertArrayHasKey( 'test_custom', $facets->types );
+		$this->assertInstanceOf( get_class( $facet_type ), $facets->types['test_custom'] );
+
+		// Make sure it uses our instance
+		$facets->types['test_custom'] = $facet_type;
+
+		$facets->setup();
+
+		remove_filter( 'ep_facet_types', $register_facet_type );
+	}
 
 	/**
 	 * Test the `get_selected` method
 	 *
 	 * @since 3.6.0
 	 * @group facets
-	 *
 	 */
 	public function testGetSelected() {
 		$facet_feature = Features::factory()->get_registered_feature( 'facets' );
@@ -73,6 +82,18 @@ class TestFacets extends BaseTestCase {
 		$this->assertSelectedTax( [ 'dolor' => true ], 'taxonomy', $selected );
 		$this->assertArrayHasKey( 'post_type', $selected );
 		$this->assertSame( 'posttype', $selected['post_type'] );
+
+		// test for a term having accents characters in it.
+		$term = $this->factory->category->create_and_get(
+			array(
+				'name' => 'غير-مصنف',
+			)
+		);
+		parse_str( "post_type=posttype&ep_filter_taxonomy={$term->slug}", $_GET );
+		$selected = $facet_feature->get_selected();
+		$this->assertSelectedTax( array( $term->slug => true ), 'taxonomy', $selected );
+		$this->assertArrayHasKey( 'post_type', $selected );
+		$this->assertSame( 'posttype', $selected['post_type'] );
 	}
 
 	/**
@@ -80,7 +101,6 @@ class TestFacets extends BaseTestCase {
 	 *
 	 * @since 3.6.0
 	 * @group facets
-	 *
 	 */
 	public function testBuildQueryUrl() {
 		$facet_feature = Features::factory()->get_registered_feature( 'facets' );
@@ -112,12 +132,39 @@ class TestFacets extends BaseTestCase {
 			]
 		];
 
-		$this->assertEquals( '/?ep_filter_category=augue%2Cconsectetur', $facet_feature->build_query_url( $filters ) );
+		$this->assertEquals( '/?ep_filter_category=augue,consectetur', $facet_feature->build_query_url( $filters ) );
+
+		// test when search parameter is empty.
+		$filters['s'] = '';
+		$this->assertEquals( '/?ep_filter_category=augue,consectetur&s=', $facet_feature->build_query_url( $filters ) );
 
 		$_SERVER['REQUEST_URI'] = 'test/page/1';
 
 		$filters['s'] = 'dolor';
-		$this->assertEquals( 'test/?ep_filter_category=augue%2Cconsectetur&s=dolor', $facet_feature->build_query_url( $filters ) );
+		$this->assertEquals( 'test/?ep_filter_category=augue,consectetur&s=dolor', $facet_feature->build_query_url( $filters ) );
+
+		/**
+		 * Test the `ep_facet_query_string` filter.
+		 */
+		$change_facet_query_string = function ( $query_string, $query_params ) {
+			$this->assertIsArray( $query_params );
+			$query_string .= '&foobar';
+			return $query_string;
+		};
+		add_filter( 'ep_facet_query_string', $change_facet_query_string, 10, 2 );
+		$this->assertStringEndsWith( '&foobar', $facet_feature->build_query_url( $filters ) );
+		remove_filter( 'ep_facet_query_string', $change_facet_query_string, 10, 2 );
+
+		/**
+		 * (Indirectly) test the `ep_facet_filter_name` filter
+		 */
+		$change_ep_facet_filter_name = function( $original_name ) {
+			$this->assertEquals( 'ep_filter_', $original_name );
+			return 'ep_custom_filter_';
+		};
+		add_filter( 'ep_facet_filter_name', $change_ep_facet_filter_name );
+		$this->assertEquals( 'test/?ep_custom_filter_category=augue,consectetur&s=dolor', $facet_feature->build_query_url( $filters ) );
+		remove_filter( 'ep_facet_filter_name', $change_ep_facet_filter_name );
 	}
 
 	/**

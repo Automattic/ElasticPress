@@ -8,7 +8,6 @@
 namespace ElasticPressTest;
 
 use ElasticPress;
-use ElasticPress\Utils as Utils;
 
 /**
  * Feature test class
@@ -31,8 +30,7 @@ class FeatureTest extends ElasticPress\Feature {
 	 * @return ElasticPress\FeatureRequirementsStatus
 	 */
 	public function requirements_status() {
-		// VIP: Use Utils
-		$on = Utils\get_option( 'ep_test_feature_on', 0 );
+		$on = get_site_option( 'ep_test_feature_on', 0 );
 
 		$status = new ElasticPress\FeatureRequirementsStatus( $on );
 

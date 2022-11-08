@@ -210,7 +210,8 @@ class TestFeatureActivation extends BaseTestCase {
 		$this->handle_feature_activation();
 		ElasticPress\Features::factory()->setup_features();
 
-		$requirements_statuses = get_site_option( 'ep_feature_requirement_statuses' );
+		// VIP: Use per-site option
+		$requirements_statuses = get_option( 'ep_feature_requirement_statuses' );
 
 		$this->assertEquals( false, ElasticPress\Features::factory()->registered_features['test']->is_active() );
 		$this->assertEquals( 2, ElasticPress\Features::factory()->registered_features['test']->requirements_status()->code );

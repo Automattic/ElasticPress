@@ -1397,5 +1397,5 @@ class TestUser extends BaseTestCase {
 		$this->assertTrue( $this->get_feature()->integrate_search_queries( false, $query ) );
 		$this->assertEquals( 2, $query->total_users );
 		$this->assertTrue( $query->query_vars['elasticsearch_success'] );
-
+	}
 }

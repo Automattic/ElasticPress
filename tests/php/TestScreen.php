@@ -91,7 +91,8 @@ class TestScreen extends BaseTestCase {
 
 		// This will be 'install' for single site, but null for multisite.
 		if ( is_multisite() ) {
-			$this->assertNull( ElasticPress\Screen::factory()->get_current_screen() );
+			// VIP: It doesn't matter whether it's multisite or not.
+			$this->assertSame( 'install', ElasticPress\Screen::factory()->get_current_screen() );
 		} else {
 			$this->assertSame( 'install', ElasticPress\Screen::factory()->get_current_screen() );
 		}

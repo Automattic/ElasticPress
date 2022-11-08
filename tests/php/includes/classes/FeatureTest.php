@@ -30,7 +30,8 @@ class FeatureTest extends ElasticPress\Feature {
 	 * @return ElasticPress\FeatureRequirementsStatus
 	 */
 	public function requirements_status() {
-		$on = get_site_option( 'ep_test_feature_on', 0 );
+		// VIP: Use per-option basis
+		$on = get_option( 'ep_test_feature_on', 0 );
 
 		$status = new ElasticPress\FeatureRequirementsStatus( $on );
 

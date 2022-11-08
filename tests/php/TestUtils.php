@@ -172,19 +172,13 @@ class TestUtils extends BaseTestCase {
 	 */
 	public function testIsIndexing() {
 
-		if ( is_multisite() ) {
-			update_site_option( 'ep_index_meta', [ 'method' => 'test' ] );
-		} else {
-			update_option( 'ep_index_meta', [ 'method' => 'test' ] );
-		}
+		// VIP: We use per-site option
+		update_option( 'ep_index_meta', [ 'method' => 'test' ] );
 
 		$this->assertTrue( ElasticPress\Utils\is_indexing() );
 
-		if ( is_multisite() ) {
-			delete_site_option( 'ep_index_meta' );
-		} else {
-			delete_option( 'ep_index_meta' );
-		}
+		// VIP: We use per-site option
+		delete_option( 'ep_index_meta' );
 
 		$this->assertFalse( ElasticPress\Utils\is_indexing() );
 	}

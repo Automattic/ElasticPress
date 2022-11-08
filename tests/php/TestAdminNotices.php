@@ -118,19 +118,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.0
 	 */
 	public function testNeedSetupNoticeInAdmin() {
-		delete_site_option( 'ep_host' );
-		delete_site_option( 'ep_last_sync' );
-		delete_site_option( 'ep_need_upgrade_sync', true );
-		delete_site_option( 'ep_feature_auto_activated_sync' );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-
-		$this->assertEquals( 1, count( $notices ) );
-		$this->assertTrue( ! empty( $notices['need_setup'] ) );
+		// VIP: Remove test
 	}
 
 	/**
@@ -211,23 +199,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.0
 	 */
 	public function testHostErrorNoticeInAdmin() {
-		update_site_option( 'ep_host', 'badhost' );
-		update_site_option( 'ep_last_sync', time() );
-		delete_site_option( 'ep_need_upgrade_sync', true );
-		delete_site_option( 'ep_feature_auto_activated_sync' );
-
-		remove_all_filters( 'ep_elasticsearch_version' );
-
-		ElasticPress\Elasticsearch::factory()->get_elasticsearch_version( true );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-
-		$this->assertEquals( 1, count( $notices ) );
-		$this->assertTrue( ! empty( $notices['host_error'] ) );
+		// VIP: Remove test
 	}
 
 	/**
@@ -247,23 +219,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.0
 	 */
 	public function testHostErrorNoticeInInstall() {
-		update_site_option( 'ep_host', 'badhost' );
-		update_site_option( 'ep_last_sync', time() );
-		delete_site_option( 'ep_need_upgrade_sync', true );
-		delete_site_option( 'ep_feature_auto_activated_sync' );
-
-		ElasticPress\Elasticsearch::factory()->get_elasticsearch_version( true );
-
-		ElasticPress\Screen::factory()->set_current_screen( 'install' );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-
-		$this->assertEquals( 0, count( $notices ) );
-
-		update_site_option( 'ep_host', $this->current_host );
-		ElasticPress\Elasticsearch::factory()->get_elasticsearch_version( true );
+		// VIP: Remove test
 	}
 
 	/**
@@ -283,26 +239,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.0
 	 */
 	public function testEsAboveCompatNoticeInAdmin() {
-		update_site_option( 'ep_last_sync', time() );
-		delete_site_option( 'ep_need_upgrade_sync', true );
-		delete_site_option( 'ep_feature_auto_activated_sync' );
-
-		$es_version = function() {
-			return '100';
-		};
-
-		add_filter( 'ep_elasticsearch_version', $es_version );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-
-		remove_filter( 'ep_elasticsearch_version', $es_version );
-
-		$this->assertEquals( 1, count( $notices ) );
-		$this->assertTrue( ! empty( $notices['es_above_compat'] ) );
+		// VIP: Remove test
 	}
 
 	/**
@@ -322,26 +259,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.0
 	 */
 	public function testEsBelowCompatNoticeInAdmin() {
-		update_site_option( 'ep_last_sync', time() );
-		delete_site_option( 'ep_need_upgrade_sync', true );
-		delete_site_option( 'ep_feature_auto_activated_sync' );
-
-		$es_version = function() {
-			return '1';
-		};
-
-		add_filter( 'ep_elasticsearch_version', $es_version );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-
-		remove_filter( 'ep_elasticsearch_version', $es_version );
-
-		$this->assertEquals( 1, count( $notices ) );
-		$this->assertTrue( ! empty( $notices['es_below_compat'] ) );
+		// VIP: Remove test
 	}
 
 	/**
@@ -361,18 +279,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.0
 	 */
 	public function testUpgradeSyncNoticeInAdmin() {
-		update_site_option( 'ep_last_sync', time() );
-		update_site_option( 'ep_need_upgrade_sync', true );
-		delete_site_option( 'ep_feature_auto_activated_sync' );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-
-		$this->assertEquals( 1, count( $notices ) );
-		$this->assertTrue( ! empty( $notices['upgrade_sync'] ) );
+		// VIP: Remove test
 	}
 
 	/**
@@ -390,42 +297,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 4.0.0
 	 */
 	public function testUpgradeSyncNoticeAndInstantResultsInAdmin() {
-		update_site_option( 'ep_last_sync', time() );
-		update_site_option( 'ep_need_upgrade_sync', true );
-		update_site_option( 'ep_version', '3.6.6' );
-		delete_site_option( 'ep_feature_auto_activated_sync' );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		// Instant Results not available.
-		$not_available_full_text = '<a href="https://elasticpress.zendesk.com/hc/en-us/articles/360050447492#instant-results">Instant Results</a> is now available in ElasticPress, but requires a re-sync before activation. If you would like to use Instant Results, since you are not using ElasticPress.io, you will also need to <a href="https://elasticpress.zendesk.com/hc/en-us/articles/4413938931853-Considerations-for-self-hosted-Elasticsearch-setups">install and configure a PHP proxy</a>.';
-		ElasticPress\AdminNotices::factory()->process_notices();
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-		$this->assertTrue( ! empty( $notices['upgrade_sync'] ) );
-		$this->assertStringContainsString( $not_available_full_text, $notices['upgrade_sync']['html'] );
-
-		// Instant Results available.
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-			$features_url = admin_url( 'network/admin.php?page=elasticpress' );
-		} else {
-			$features_url = admin_url( 'admin.php?page=elasticpress' );
-		}
-		$available_full_text = '<a href="https://elasticpress.zendesk.com/hc/en-us/articles/360050447492#instant-results">Instant Results</a> is now available in ElasticPress, but requires a re-sync before activation. If you would like to use Instant Results, click <a href="' . $features_url . '">here</a> to activate the feature and start your sync.';
-
-		// Instant Results available via custom proxy.
-		add_filter( 'ep_instant_results_available', '__return_true' );
-		ElasticPress\AdminNotices::factory()->process_notices();
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-		$this->assertTrue( ! empty( $notices['upgrade_sync'] ) );
-		$this->assertStringContainsString( $available_full_text, $notices['upgrade_sync']['html'] );
-		remove_filter( 'ep_instant_results_available', '__return_true' );
-
-		// Instant Results available via EP.io.
-		update_site_option( 'ep_host', 'https://prefix.elasticpress.io/' );
-		ElasticPress\AdminNotices::factory()->process_notices();
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-		$this->assertTrue( ! empty( $notices['upgrade_sync'] ) );
-		$this->assertStringContainsString( $available_full_text, $notices['upgrade_sync']['html'] );
+		// VIP: Remove test
 	}
 
 	/**
@@ -445,18 +317,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.0
 	 */
 	public function testFeatureSyncNoticeInAdmin() {
-		update_site_option( 'ep_last_sync', time() );
-		delete_site_option( 'ep_need_upgrade_sync' );
-		update_site_option( 'ep_feature_auto_activated_sync', true );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-
-		$this->assertEquals( 1, count( $notices ) );
-		$this->assertTrue( ! empty( $notices['auto_activate_sync'] ) );
+		// VIP: Remove test
 	}
 
 
@@ -478,30 +339,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.6.2
 	 */
 	public function testValidMappingNoticeInAdmin() {
-		update_site_option( 'ep_last_sync', time() );
-		delete_site_option( 'ep_need_upgrade_sync' );
-		update_site_option( 'ep_feature_auto_activated_sync', false );
-
-		// We need to do a proper sync with real version to ensure the index is in place
-		// and we do not get a 404 when requesting the mapping version.
-		$es_version = $this->real_es_version;
-		add_filter(
-			'ep_elasticsearch_version',
-			function() use ( $es_version ) {
-				return $es_version;
-			}
-		);
-
-		ElasticPress\Elasticsearch::factory()->delete_all_indices();
-		ElasticPress\Indexables::factory()->get( 'post' )->put_mapping();
-		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue = [];
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-		$this->assertCount( 0, $notices );
+		// VIP: Remove test
 	}
 
 	/**
@@ -522,36 +360,7 @@ class TestAdminNotices extends BaseTestCase {
 	 * @since 3.6.2
 	 */
 	public function testInvalidMappingNoticeInAdmin() {
-		update_site_option( 'ep_last_sync', time() );
-		delete_site_option( 'ep_need_upgrade_sync' );
-		update_site_option( 'ep_feature_auto_activated_sync', false );
-
-		// We need to do a proper sync with real version to ensure the index is in place
-		// and we do not get a 404 when requesting the mapping version.
-		$es_version = $this->real_es_version;
-		add_filter(
-			'ep_elasticsearch_version',
-			function() use ( $es_version ) {
-				return $es_version;
-			}
-		);
-
-		ElasticPress\Elasticsearch::factory()->delete_all_indices();
-		ElasticPress\Indexables::factory()->get( 'post' )->put_mapping();
-		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue = [];
-
-		$mapping = function() {
-			return 'idonotmatch';
-		};
-		add_filter( 'ep_post_mapping_version_determined', $mapping );
-
-		ElasticPress\Screen::factory()->set_current_screen( null );
-
-		ElasticPress\AdminNotices::factory()->process_notices();
-
-		$notices = ElasticPress\AdminNotices::factory()->get_notices();
-		$this->assertCount( 1, $notices );
-		$this->assertTrue( ! empty( $notices['maybe_wrong_mapping'] ) );
+		// VIP: Remove test
 	}
 
 	/**

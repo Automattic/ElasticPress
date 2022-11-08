@@ -828,67 +828,6 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
-	 *
-	 * Test a taxonomy query with invalid field value and make sure it falls back to term_id.
-	 *
-	 * @since 4.4.0
-	 * @group post
-	 */
-	public function testTaxQueryInvalidWithInvalidField() {
-		$post = $this->ep_factory->post->create(
-			array(
-				'post_content' => 'findme test 1',
-				'tags_input'   => array(
-					'one',
-					'two',
-				),
-			)
-		);
-		$this->ep_factory->post->create( array( 'post_content' => 'findme test 2' ) );
-		$this->ep_factory->post->create(
-			array(
-				'post_content' => 'findme test 3',
-				'tags_input'   => array(
-					'one',
-					'three',
-				),
-			)
-		);
-
-		$tags   = wp_get_post_tags( $post );
-		$tag_id = 0;
-
-		foreach ( $tags as $tag ) {
-			if ( 'one' === $tag->slug ) {
-				$tag_id = $tag->term_id;
-			}
-		}
-
-		ElasticPress\Elasticsearch::factory()->refresh_indices();
-
-		$args  = array(
-			'ep_integrate' => false,
-			'tax_query'    => array(
-				array(
-					'taxonomy' => 'post_tag',
-					'terms'    => array( $tag_id ),
-					'field'    => 'invalid_field',
-				),
-			),
-		);
-		$query = new \WP_Query( $args );
-		$this->assertNull( $query->elasticsearch_success );
-
-		$expected_result = wp_list_pluck( $query->posts, 'ID' );
-
-		$args['ep_integrate'] = true;
-		$query                = new \WP_Query( $args );
-
-		$this->assertTrue( $query->elasticsearch_success );
-		$this->assertEquals( $expected_result, wp_list_pluck( $query->posts, 'ID' ) );
-	}
-
-	/**
 	 * Test a taxonomy query with term name field
 	 *
 	 * @since 1.8
@@ -3132,75 +3071,6 @@ class TestPost extends BaseTestCase {
 		$this->assertTrue( $query->elasticsearch_success );
 		$this->assertEquals( 2, $query->post_count );
 		$this->assertEquals( 2, $query->found_posts );
-	}
-
-	/**
-	 * Test an advanced meta filter query with or relation while sorting by Meta key
-	 *
-	 * @since 4.4.0
-	 * @group post
-	 */
-	public function testMetaQueryOrRelationWithSort() {
-		$this->ep_factory->post->create(
-			array(
-				'post_content' => 'the post content findme',
-				'meta_input'   => array( 'test_key' => date( 'Ymd' ) - 5 ),
-			),
-		);
-		$this->ep_factory->post->create(
-			array(
-				'post_content' => 'the post content findme',
-				'meta_input'   => array(
-					'test_key'  => date( 'Ymd' ) + 5,
-					'test_key2' => date( 'Ymd' ) + 6,
-				),
-			),
-		);
-		$this->ep_factory->post->create(
-			array(
-				'post_content' => 'the post content findme',
-				'meta_input'   => array(
-					'test_key'  => date( 'Ymd' ) + 5,
-					'test_key2' => date( 'Ymd' ) + 6,
-				),
-			),
-		);
-
-		$post = new \ElasticPress\Indexable\Post\Post();
-		ElasticPress\Elasticsearch::factory()->refresh_indices();
-		$args = array(
-			'ep_integrate' => true,
-			'meta_key'     => 'test_key',
-			'meta_query'   => array(
-				'relation' => 'or',
-				array(
-					'key'     => 'test_key',
-					'value'   => date( 'Ymd' ),
-					'compare' => '<=',
-					'type'    => 'NUMERIC',
-				),
-				array(
-					'key'     => 'test_key2',
-					'value'   => date( 'Ymd' ),
-					'compare' => '>=',
-					'type'    => 'NUMERIC',
-				),
-			),
-			'orderby'      => 'meta_value_num',
-			'order'        => 'ASC',
-		);
-
-		$query = new \WP_Query( $args );
-		$args  = $post->format_args( $args, new \WP_Query() );
-
-		$outer_must = $args['post_filter']['bool']['must'][0]['bool']['must'];
-
-		$this->assertTrue( $query->elasticsearch_success );
-		$this->assertEquals( 3, $query->post_count );
-		$this->assertEquals( 3, $query->found_posts );
-		$this->assertSame( 'meta.test_key', $outer_must[0]['exists']['field'] );
-		$this->assertArrayHasKey( 'meta.test_key.long', $outer_must[1]['bool']['should']['bool']['should'][0]['bool']['must'][0]['range'] );
-		$this->assertArrayHasKey( 'meta.test_key2.long', $outer_must[1]['bool']['should']['bool']['should'][1]['bool']['must'][0]['range'] );
 	}
 
 	/**
@@ -6478,43 +6348,6 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
-	 * Tests the `ep_post_filters` filter
-	 *
-	 * @return void
-	 * @group post
-	 */
-	public function testFormatArgsEpPostFilter() {
-		$post = new \ElasticPress\Indexable\Post\Post();
-
-		$test_args  = [];
-		$test_query = new \WP_Query( $test_args );
-
-		$add_es_filter = function( $filters, $args, $query ) use ( $test_query, $test_args ) {
-			$filters['new_filter'] = [
-				'term' => [
-					'my_custom_field.raw' => 'my_custom_value',
-				],
-			];
-
-			// Simple check if the filter additional parameters work.
-			$this->assertSame( $test_query, $query );
-			$this->assertSame( $test_args, $args );
-
-			return $filters;
-		};
-		add_filter( 'ep_post_filters', $add_es_filter, 10, 3 );
-
-		$args = $post->format_args( $test_args, $test_query );
-
-		$this->assertNotEmpty( $args['post_filter']['bool']['must'] );
-
-		$last_filter = end( $args['post_filter']['bool']['must'] );
-		$this->assertSame( [ 'my_custom_field.raw' => 'my_custom_value' ], $last_filter['term'] );
-
-		remove_filter( 'ep_post_filters', $add_es_filter );
-	}
-
-	/**
 	 * Tests additional order by parameters in parse_orderby().
 	 *
 	 * @return void
@@ -7442,64 +7275,6 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
-	 * Test the get_search_algorithm implementation
-	 */
-	public function testGetSearchAlgorithm() {
-		/**
-		 * Test default search algorithm
-		 */
-		$version_40 = \ElasticPress\SearchAlgorithms::factory()->get( '4.0' );
-
-		$post_indexable   = \ElasticPress\Indexables::factory()->get( 'post' );
-		$search_algorithm = $post_indexable->get_search_algorithm( '', [], [] );
-
-		$this->assertSame( $version_40, $search_algorithm );
-
-		/**
-		 * Test setting a diffent algorithm through the `ep_search_algorithm_version` filter
-		 */
-		$version_35 = \ElasticPress\SearchAlgorithms::factory()->get( '3.5' );
-
-		$set_version_35 = function() {
-			return '3.5';
-		};
-
-		add_filter( 'ep_search_algorithm_version', $set_version_35 );
-
-		$search_algorithm = $post_indexable->get_search_algorithm( '', [], [] );
-		$this->assertSame( $version_35, $search_algorithm );
-
-		remove_filter( 'ep_search_algorithm_version', $set_version_35 );
-
-		/**
-		 * Test setting a non-existent algorithm through the `ep_search_algorithm_version` filter
-		 * It should use `basic`
-		 */
-		$basic = \ElasticPress\SearchAlgorithms::factory()->get( 'basic' );
-
-		$set_non_existent_version = function() {
-			return 'foobar';
-		};
-
-		add_filter( 'ep_search_algorithm_version', $set_non_existent_version );
-
-		$search_algorithm = $post_indexable->get_search_algorithm( '', [], [] );
-		$this->assertSame( $basic, $search_algorithm );
-
-		remove_filter( 'ep_search_algorithm_version', $set_non_existent_version );
-
-		/**
-		 * Test the `ep_{$indexable_slug}_search_algorithm` filter
-		 */
-		add_filter( 'ep_post_search_algorithm', $set_version_35 );
-
-		$search_algorithm = $post_indexable->get_search_algorithm( '', [], [] );
-		$this->assertSame( $version_35, $search_algorithm );
-
-		remove_filter( 'ep_post_search_algorithm', $set_version_35 );
-	}
-
-	/**
 	 * Tests is_meta_allowed
 	 *
 	 * @return void
@@ -7534,71 +7309,6 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
-	 * Tests get_distinct_meta_field_keys
-	 *
-	 * @return void
-	 * @group  post
-	 */
-	public function testGetDistinctMetaFieldKeys() {
-		$indexable = \ElasticPress\Indexables::factory()->get( 'post' );
-
-		$this->ep_factory->post->create( array( 'meta_input' => array( 'new_meta_key_1' => '' ) ) );
-		$this->ep_factory->post->create( array( 'meta_input' => array( 'new_meta_key_2' => '' ) ) );
-
-		ElasticPress\Elasticsearch::factory()->refresh_indices();
-
-		$distinct_meta_field_keys = $indexable->get_distinct_meta_field_keys();
-
-		$this->assertIsArray( $distinct_meta_field_keys );
-		$this->assertContains( 'new_meta_key_1', $distinct_meta_field_keys );
-		$this->assertContains( 'new_meta_key_2', $distinct_meta_field_keys );
-	}
-
-	/**
-	 * Tests get_all_distinct_values
-	 *
-	 * @return void
-	 * @group  post
-	 */
-	public function testGetAllDistinctValues() {
-		$indexable = \ElasticPress\Indexables::factory()->get( 'post' );
-
-		$this->ep_factory->post->create( array( 'meta_input' => array( 'new_meta_key_1' => 'foo' ) ) );
-		$this->ep_factory->post->create( array( 'meta_input' => array( 'new_meta_key_1' => 'bar' ) ) );
-		$this->ep_factory->post->create( array( 'meta_input' => array( 'new_meta_key_1' => 'foobar' ) ) );
-
-		$this->ep_factory->post->create( array( 'meta_input' => array( 'new_meta_key_2' => 'lorem' ) ) );
-		$this->ep_factory->post->create( array( 'meta_input' => array( 'new_meta_key_2' => 'ipsum' ) ) );
-
-		ElasticPress\Elasticsearch::factory()->refresh_indices();
-
-		$distinct_values = $indexable->get_all_distinct_values( 'meta.new_meta_key_1.raw' );
-
-		$this->assertCount( 3, $distinct_values );
-		$this->assertContains( 'foo', $distinct_values );
-		$this->assertContains( 'bar', $distinct_values );
-		$this->assertContains( 'foobar', $distinct_values );
-
-		$distinct_values = $indexable->get_all_distinct_values( 'meta.new_meta_key_1.raw', 1 );
-		$this->assertCount( 1, $distinct_values );
-		$this->assertContains( 'bar', $distinct_values );
-
-		$change_bucket_size = function( $count, $field ) {
-			return ( 'meta.new_meta_key_1.raw' === $field ) ? 1 : $count;
-		};
-		add_filter( 'ep_post_all_distinct_values', $change_bucket_size, 10, 2 );
-
-		$distinct_values_1 = $indexable->get_all_distinct_values( 'meta.new_meta_key_1.raw' );
-		$this->assertCount( 1, $distinct_values_1 );
-		$this->assertContains( 'bar', $distinct_values_1 );
-
-		$distinct_values_2 = $indexable->get_all_distinct_values( 'meta.new_meta_key_2.raw' );
-		$this->assertCount( 2, $distinct_values_2 );
-		$this->assertContains( 'lorem', $distinct_values_2 );
-		$this->assertContains( 'ipsum', $distinct_values_2 );
-	}
-
-	/**
 	 * Tests search term wrapped in html tags.
 	 */
 	public function testHighlightTags() {
@@ -7625,8 +7335,8 @@ class TestPost extends BaseTestCase {
 		);
 		$query = new \WP_Query( $args );
 
-		$this->assertStringContainsString( '<mark class=\'ep-highlight\'>test</mark>', $query->posts[0]->post_content );
-		$this->assertStringContainsString( '<mark class=\'ep-highlight\'>test</mark>', $query->posts[0]->post_title );
+		$this->assertStringContainsString( '<mark class="ep-highlight">test</mark>', $query->posts[0]->post_content );
+		$this->assertStringContainsString( '<mark class="ep-highlight">test</mark>', $query->posts[0]->post_title );
 
 		// bypass the highlighting the search term
 		add_filter( 'ep_highlight_should_add_clause', '__return_false' );
@@ -7674,8 +7384,8 @@ class TestPost extends BaseTestCase {
 		);
 		$query = new \WP_Query( $args );
 
-		$this->assertStringContainsString( '<mark class=\'my-custom-class\'>test</mark>', $query->posts[0]->post_content );
-		$this->assertStringContainsString( '<mark class=\'my-custom-class\'>test</mark>', $query->posts[0]->post_title );
+		$this->assertStringContainsString( '<mark class="my-custom-class">test</mark>', $query->posts[0]->post_content );
+		$this->assertStringContainsString( '<mark class="my-custom-class">test</mark>', $query->posts[0]->post_title );
 
 	}
 
@@ -7713,8 +7423,8 @@ class TestPost extends BaseTestCase {
 		);
 		$query = new \WP_Query( $args );
 
-		$this->assertStringContainsString( '<mark class=\'ep-highlight\'>test</mark>', $query->posts[0]->post_title );
-		$this->assertStringNotContainsString( '<mark class=\'ep-highlight\'>test</mark>', $query->posts[0]->post_content );
+		$this->assertStringContainsString( '<mark class="ep-highlight">test</mark>', $query->posts[0]->post_title );
+		$this->assertStringNotContainsString( '<mark class="ep-highlight">test</mark>', $query->posts[0]->post_content );
 	}
 
 	/**
@@ -7739,7 +7449,7 @@ class TestPost extends BaseTestCase {
 		);
 		$query = new \WP_Query( $args );
 
-		$expected_result = '<mark class=\'ep-highlight\'>test</mark> excerpt';
+		$expected_result = '<mark class="ep-highlight">test</mark> excerpt';
 		$this->assertEquals( $expected_result, $query->posts[0]->post_excerpt );
 		$this->assertEquals( $expected_result, get_the_excerpt( $query->posts[0] ) );
 
@@ -7753,7 +7463,7 @@ class TestPost extends BaseTestCase {
 		$query = new \WP_Query( $args );
 
 		// using StringContainsString because the_content filter adds the break line.
-		$this->assertStringContainsString( '<mark class=\'ep-highlight\'>new</mark> post', get_the_excerpt( $query->posts[0] ) );
+		$this->assertStringContainsString( '<mark class="ep-highlight">new</mark> post', get_the_excerpt( $query->posts[0] ) );
 	}
 
 	/**

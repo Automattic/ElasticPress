@@ -288,7 +288,7 @@ class TestWooCommerce extends BaseTestCase {
 		ElasticPress\Features::factory()->activate_feature( 'woocommerce' );
 		ElasticPress\Features::factory()->setup_features();
 
-		parse_str( 'post_type=product&s=product&product_type=downloadable&stock_status=instock', $_GET );
+		parse_str( 'post_type=product&s=product&product_type=downloadable', $_GET );
 
 		$query_args = [
 			'ep_integrate' => true,
@@ -303,8 +303,6 @@ class TestWooCommerce extends BaseTestCase {
 		$this->assertEquals( $query->query_vars['s'], 'product' );
 		$this->assertEquals( $query->query_vars['meta_query'][0]['key'], '_downloadable' );
 		$this->assertEquals( $query->query_vars['meta_query'][0]['value'], 'yes' );
-		$this->assertEquals( $query->query_vars['meta_query'][1]['key'], '_stock_status' );
-		$this->assertEquals( $query->query_vars['meta_query'][1]['value'], 'instock' );
 		$this->assertEquals(
 			$query->query_vars['search_fields'],
 			[

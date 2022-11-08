@@ -25,9 +25,9 @@ class TestFeatureActivation extends BaseTestCase {
 	 *
 	 * @since 2.2
 	 */
-	public function setUp() {
+	public function set_up() {
 		global $wpdb;
-		parent::setUp();
+		parent::set_up();
 		$wpdb->suppress_errors();
 
 		$admin_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
@@ -47,8 +47,8 @@ class TestFeatureActivation extends BaseTestCase {
 	 *
 	 * @since 2.2
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		// make sure no one attached to this
 		remove_filter( 'ep_sync_terms_allow_hierarchy', array( $this, 'ep_allow_multiple_level_terms_sync' ), 100 );
@@ -210,8 +210,7 @@ class TestFeatureActivation extends BaseTestCase {
 		$this->handle_feature_activation();
 		ElasticPress\Features::factory()->setup_features();
 
-		// VIP: Use per-site option
-		$requirements_statuses = get_option( 'ep_feature_requirement_statuses' );
+		$requirements_statuses = get_site_option( 'ep_feature_requirement_statuses' );
 
 		$this->assertEquals( false, ElasticPress\Features::factory()->registered_features['test']->is_active() );
 		$this->assertEquals( 2, ElasticPress\Features::factory()->registered_features['test']->requirements_status()->code );

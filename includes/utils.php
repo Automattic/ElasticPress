@@ -492,7 +492,7 @@ function get_indexing_status() {
 		// Change method name for retrocompatibility.
 		// `dashboard` is used mainly because hooks names depend on that.
 		if ( ! empty( $index_status['method'] ) && 'dashboard' === $index_status['method'] ) {
-			$index_status['method'] = 'web';
+			$index_status['method'] = 'cli'; // VIP: We only use CLI.
 		}
 
 		if ( ! empty( $index_status['method'] ) && 'web' === $index_status['method'] ) {

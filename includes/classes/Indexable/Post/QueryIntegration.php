@@ -39,11 +39,7 @@ class QueryIntegration {
 	 * @since 3.6.0 Added $indexable_slug
 	 */
 	public function __construct( $indexable_slug = 'post' ) {
-		// Ensure that we are currently allowing ElasticPress to override the normal WP_Query
-		// Indexable->is_full_reindexing() is not available at this point yet, so using the IndexHelper version of it.
-		if ( \ElasticPress\IndexHelper::factory()->is_full_reindexing( $indexable_slug, get_current_blog_id() ) ) {
-			return;
-		}
+		// VIP: Allow query integration while indexing because we have versioning.
 
 		// Add header
 		add_action( 'pre_get_posts', array( $this, 'add_es_header' ), 5 );

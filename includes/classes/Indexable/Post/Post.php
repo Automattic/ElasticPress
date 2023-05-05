@@ -1019,7 +1019,7 @@ class Post extends Indexable {
 			}
 
 			$sanitized_value = array_filter( (array) $args[ $key ] );
-			if ( (array) $args[ $key ] && ! $sanitized_value  ) {
+			if ( (array) $args[ $key ] && ! $sanitized_value ) {
 				$extra = [
 					'key'       => $key,
 					'old_value' => wp_json_encode( $args[ $key ] ),
@@ -1029,12 +1029,14 @@ class Post extends Indexable {
 				}
 
 				if ( is_callable( '\Automattic\VIP\Logstash\log2logstash' ) ) {
-					\Automattic\VIP\Logstash\log2logstash( array(
-						'severity' => 'info',
-						'feature'  => 'search_next_ep_sanitized_key',
-						'message'  => 'Found sanitized key',
-						'extra'    => $extra
-					) );
+					\Automattic\VIP\Logstash\log2logstash(
+						array(
+							'severity' => 'info',
+							'feature'  => 'search_next_ep_sanitized_key',
+							'message'  => 'Found sanitized key',
+							'extra'    => $extra,
+						)
+					);
 				}
 			}
 		}

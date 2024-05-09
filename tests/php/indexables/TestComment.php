@@ -83,7 +83,8 @@ class TestComment extends BaseTestCase {
 	 * @group comments
 	 */
 	public function createComments( $number = 4, $has_child = false ) {
-		$parent_comment_id = $child_comment_id = 0;
+		$parent_comment_id = 0;
+		$child_comment_id  = 0;
 		$comment_ids       = [];
 
 		$post_id = $this->ep_factory->post->create();
@@ -259,7 +260,8 @@ class TestComment extends BaseTestCase {
 		// First try without ES and make sure everything is right.
 		$comments_query = new \WP_Comment_Query( [] );
 
-		$this->assertObjectNotHasAttribute( 'elasticsearch_success', $comments_query );
+		$properties = get_object_vars( $comments_query );
+		$this->assertArrayNotHasKey( 'elasticsearch_success', $properties );
 
 		$comments = $comments_query->get_comments();
 
@@ -931,7 +933,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->user_id, [ $current_user_id, $another_author_id ] ) );
+			$this->assertContains( (int) $comment->user_id, [ $current_user_id, $another_author_id ] );
 		}
 
 		$this->assertEquals( 3, count( $comments ) );
@@ -1017,7 +1019,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_ID, $test_comments ) );
+			$this->assertContains( (int) $comment->comment_ID, $test_comments );
 		}
 
 		$this->assertEquals( 2, count( $comments ) );
@@ -1046,7 +1048,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertFalse( in_array( $comment->comment_ID, $test_comments ) );
+			$this->assertNotContains( $comment->comment_ID, $test_comments );
 		}
 
 		$this->assertEquals( 3, count( $comments ) );
@@ -1132,8 +1134,8 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_ID, $in_range ) );
-			$this->assertFalse( in_array( $comment->comment_ID, $out_range ) );
+			$this->assertContains( (int) $comment->comment_ID, $in_range );
+			$this->assertNotContains( (int) $comment->comment_ID, $out_range );
 		}
 
 		$this->assertEquals( 2, count( $comments ) );
@@ -1229,8 +1231,8 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_ID, $match ) );
-			$this->assertFalse( in_array( $comment->comment_ID, $not_match ) );
+			$this->assertContains( (int) $comment->comment_ID, $match );
+			$this->assertNotContains( (int) $comment->comment_ID, $not_match );
 		}
 
 		$this->assertEquals( 2, count( $comments ) );
@@ -1289,8 +1291,8 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_ID, $match ) );
-			$this->assertNotEquals( $comment->comment_ID, $not_match );
+			$this->assertContains( (int) $comment->comment_ID, $match );
+			$this->assertNotEquals( (int) $comment->comment_ID, $not_match );
 		}
 
 		$this->assertEquals( 2, count( $comments ) );
@@ -1357,8 +1359,8 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_ID, $match ) );
-			$this->assertNotEquals( $comment->comment_ID, $not_match );
+			$this->assertContains( (int) $comment->comment_ID, $match );
+			$this->assertNotEquals( (int) $comment->comment_ID, $not_match );
 		}
 
 		$this->assertEquals( 2, count( $comments ) );
@@ -1491,7 +1493,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_post_ID, [ $post_id_1, $post_id_2 ] ) );
+			$this->assertContains( (int) $comment->comment_post_ID, [ $post_id_1, $post_id_2 ] );
 		}
 
 		$this->assertEquals( 4, count( $comments ) );
@@ -1508,7 +1510,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_post_ID, [ $post_id_1, $post_id_2, $post_id_3 ] ) );
+			$this->assertContains( (int) $comment->comment_post_ID, [ $post_id_1, $post_id_2, $post_id_3 ] );
 		}
 
 		$this->assertEquals( 5, count( $comments ) );
@@ -1525,7 +1527,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_post_ID, [ $post_id_3, $post_id_4 ] ) );
+			$this->assertContains( (int) $comment->comment_post_ID, [ $post_id_3, $post_id_4 ] );
 		}
 
 		$this->assertEquals( 2, count( $comments ) );
@@ -1553,7 +1555,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_ID, $created_comments['comment_ids'] ) );
+			$this->assertContains( (int) $comment->comment_ID, $created_comments['comment_ids'] );
 		}
 
 		$this->assertEquals( 3, count( $comments ) );
@@ -1570,7 +1572,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_ID, $created_comments['comment_ids'] ) );
+			$this->assertContains( (int) $comment->comment_ID, $created_comments['comment_ids'] );
 		}
 
 		$this->assertEquals( 3, count( $comments ) );
@@ -1587,7 +1589,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertFalse( in_array( $comment->comment_post_ID, $created_comments['comment_ids'] ) );
+			$this->assertNotContains( $comment->comment_post_ID, $created_comments['comment_ids'] );
 		}
 
 		$this->assertEquals( 4, count( $comments ) );
@@ -1719,7 +1721,7 @@ class TestComment extends BaseTestCase {
 		$comments = $comments_query->get_comments();
 
 		foreach ( $comments as $comment ) {
-			$this->assertTrue( in_array( $comment->comment_post_ID, [ $post_id_1, $post_id_3 ] ) );
+			$this->assertContains( (int) $comment->comment_post_ID, [ $post_id_1, $post_id_3 ] );
 		}
 
 		$this->assertEquals( 2, count( $comments ) );

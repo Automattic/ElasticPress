@@ -51,10 +51,18 @@ class TestSynonyms extends BaseTestCase {
 		$this->fired_actions = array();
 	}
 
+	/**
+	 * Return a Synonyms instance
+	 *
+	 * @return Synonyms
+	 */
 	public function getFeature() {
 		return new Synonyms();
 	}
 
+	/**
+	 * Test class constructor
+	 */
 	public function testConstructor() {
 		$instance = $this->getFeature();
 
@@ -63,6 +71,9 @@ class TestSynonyms extends BaseTestCase {
 		$this->assertContains( 'post', $instance->affected_indices );
 	}
 
+	/**
+	 * Test the `get_synonym_post_id` method.
+	 */
 	public function testGetSynonymPostId() {
 		$instance = $this->getFeature();
 
@@ -70,6 +81,9 @@ class TestSynonyms extends BaseTestCase {
 		$this->assertGreaterThan( 0, $post_id );
 	}
 
+	/**
+	 * Test the `get_synonyms_raw` method.
+	 */
 	public function testGetSynonymsRaw() {
 		$instance = $this->getFeature();
 
@@ -78,6 +92,9 @@ class TestSynonyms extends BaseTestCase {
 		$this->assertNotEmpty( $synonyms );
 	}
 
+	/**
+	 * Test the `get_synonyms` method.
+	 */
 	public function testGetSynonyms() {
 		$instance = $this->getFeature();
 
@@ -98,6 +115,9 @@ class TestSynonyms extends BaseTestCase {
 		$this->assertContains( 'shoes =&gt; sneaker, sandal, boots, high heels', $synonyms );
 	}
 
+	/**
+	 * Test the `validate_synonym` method.
+	 */
 	public function testValidateSynonyms() {
 		$instance = $this->getFeature();
 

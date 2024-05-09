@@ -21,8 +21,10 @@ class TestPost extends BaseTestCase {
 	 */
 	public $is_404 = false;
 
+	/**
+	 * VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
+	 */
 	public static function setUpBeforeClass(): void {
-		// VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
 		if ( ! defined( 'EP_HOST' ) ) {
 			define( 'EP_HOST', \ElasticPress\Utils\get_host() );
 		}
@@ -3713,10 +3715,15 @@ class TestPost extends BaseTestCase {
 		$this->assertTrue( is_array( $recognizable_time ) && 6 === count( $recognizable_time ) );
 		$this->assertTrue( is_array( $recognizable_time ) && array_key_exists( 'datetime', $recognizable_time ) && '2020-01-20 00:00:00' === $recognizable_time['datetime'] );
 		$this->assertTrue( is_array( $relative_format ) && 6 === count( $relative_format ) );
-		$this->assertTrue( is_array( $relative_format ) && array_key_exists( 'datetime', $relative_format ) && date( 'Y-m-d H:i:s', strtotime( '+1 year' ) ) === $relative_format['datetime'] );
+		$this->assertTrue( is_array( $relative_format ) && array_key_exists( 'datetime', $relative_format ) && gmdate( 'Y-m-d H:i:s', strtotime( '+1 year' ) ) === $relative_format['datetime'] );
 
 	}
 
+	/**
+	 * Test meta date preparation
+	 *
+	 * @group post
+	 */
 	public function testMetaValueTypeDate() {
 		$meta_types = array();
 

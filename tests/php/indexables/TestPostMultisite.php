@@ -14,10 +14,17 @@ use ElasticPress;
  */
 class TestPostMultisite extends BaseTestCase {
 
+	/**
+	 * Post IDs
+	 *
+	 * @var array
+	 */
 	public $post_ids = [];
 
+	/**
+	 * VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
+	 */
 	public static function setUpBeforeClass(): void {
-		// VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
 		if ( ! defined( 'EP_HOST' ) ) {
 			define( 'EP_HOST', \ElasticPress\Utils\get_host() );
 		}
@@ -1455,8 +1462,6 @@ class TestPostMultisite extends BaseTestCase {
 			while ( $query->have_posts() ) {
 				global $post;
 				$query->the_post();
-
-				// do stuff!
 			}
 		}
 

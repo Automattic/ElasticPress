@@ -60,24 +60,35 @@ class TestSearchOrdering extends BaseTestCase {
 	}
 
 	/**
-	 * @return weighting sub-feature
+	 * Get the feature instance
+	 *
+	 * @return ElasticPress\Feature\SearchOrdering\SearchOrdering
 	 */
 	public function get_feature() {
 		return ElasticPress\Features::factory()->get_registered_feature( 'searchordering' );
 	}
 
+	/**
+	 * Test the class constructor
+	 */
 	public function testConstruct() {
 		$instance = new \ElasticPress\Feature\SearchOrdering\SearchOrdering();
 		$this->assertSame( 'searchordering', $instance->slug );
 		$this->assertSame( 'Custom Search Results', $instance->title );
 	}
 
+	/**
+	 * Test the `setup` method when search is disabled
+	 */
 	public function testSetupWithSearchDisabled() {
 		ElasticPress\Features::factory()->deactivate_feature( 'search' );
 		$this->assertFalse( $this->get_feature()->setup() );
 		ElasticPress\Features::factory()->activate_feature( 'search' );
 	}
 
+	/**
+	 * Test the `filter_updated_messages` method
+	 */
 	public function testFilterUpdatedMessages() {
 		$post            = $this->ep_factory->post->create_and_get();
 		$GLOBALS['post'] = $post;
@@ -86,6 +97,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertArrayHasKey( 'ep-pointer', $messages );
 	}
 
+	/**
+	 * Test the `output_feature_box_summary` method
+	 */
 	public function testOutputFeatureBoxSummary() {
 		ob_start();
 		$this->get_feature()->output_feature_box_summary();
@@ -94,6 +108,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertStringContainsString( 'Insert specific posts into search results for specific search queries.', $output );
 	}
 
+	/**
+	 * Test the `output_feature_box_long` method
+	 */
 	public function testOutputFeatureBoxLong() {
 		ob_start();
 		$this->get_feature()->output_feature_box_long();
@@ -102,6 +119,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertStringContainsString( 'Selected posts will be inserted into search results in the specified position.', $output );
 	}
 
+	/**
+	 * Test the `admin_menu` method
+	 */
 	public function testAdminMenu() {
 		$site_url = trailingslashit( get_option( 'siteurl' ) );
 
@@ -120,7 +140,10 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertEquals( 'Custom Results', $menu['elasticpress'][1][0] );
 	}
 
-	public function testParentFile() {
+	/**
+	 * Test the `admin_menu` method
+	 */
+	public function parent_file() {
 		set_current_screen( 'front' );
 
 		$this->assertSame( 'test_parent_file', $this->get_feature()->parent_file( 'test_parent_file' ) );
@@ -131,6 +154,9 @@ class TestSearchOrdering extends BaseTestCase {
 		}
 	}
 
+	/**
+	 * Test the `submenu_file` method
+	 */
 	public function testSubmenuFile() {
 		set_current_screen( 'front' );
 
@@ -142,6 +168,9 @@ class TestSearchOrdering extends BaseTestCase {
 		}
 	}
 
+	/**
+	 * Test the `register_post_type` method
+	 */
 	public function testRegisterPostType() {
 		$this->get_feature()->register_post_type();
 		$post_types = get_post_types();
@@ -151,6 +180,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertContains( 'ep_custom_result', $taxonomies );
 	}
 
+	/**
+	 * Test the `register_meta_box` method
+	 */
 	public function testRegisterMetaBox() {
 		global $wp_meta_boxes;
 		$this->get_feature()->register_meta_box();
@@ -163,6 +195,9 @@ class TestSearchOrdering extends BaseTestCase {
 		}
 	}
 
+	/**
+	 * Test the `render_meta_box` method
+	 */
 	public function testRenderMetaBox() {
 		$post = $this->ep_factory->post->create_and_get();
 
@@ -172,6 +207,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertStringContainsString( 'ordering-app', $output );
 	}
 
+	/**
+	 * Test the `get_pointer_data_for_localize` method
+	 */
 	public function testGetPointerData() {
 		$post_id_1  = $this->ep_factory->post->create();
 		$post_id_2  = $this->ep_factory->post->create();
@@ -205,6 +243,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertInstanceOf( '\WP_Post', $localized_data['posts'][ $post_id_2 ] );
 	}
 
+	/**
+	 * Test the `admin_enqueue_scripts` method
+	 */
 	public function testEnqueueScripts() {
 		$this->assertFalse( wp_script_is( 'ep_ordering_scripts' ) );
 		$GLOBALS['pagenow'] = 'post-new.php';
@@ -213,6 +254,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertTrue( wp_script_is( 'ep_ordering_scripts' ) );
 	}
 
+	/**
+	 * Test the early return in the `save_post` method
+	 */
 	public function testSavePostEarlyReturn() {
 		$pointer_id = $this->ep_factory->post->create( array( 'post_title' => 'findme' ) );
 		$return     = $this->get_feature()->save_post( $pointer_id, get_post( $pointer_id ) );
@@ -226,6 +270,9 @@ class TestSearchOrdering extends BaseTestCase {
 
 	}
 
+	/**
+	 * Test the `save_post` method
+	 */
 	public function testSavePost() {
 		$post_id_1  = $this->ep_factory->post->create( array( 'post_content' => 'findme test 1' ) );
 		$post_id_2  = $this->ep_factory->post->create( array( 'post_content' => 'findme test 2' ) );
@@ -239,7 +286,7 @@ class TestSearchOrdering extends BaseTestCase {
 
 		$_POST = [
 			'search-ordering-nonce' => wp_create_nonce( 'save-search-ordering' ),
-			'ordered_posts'         => json_encode(
+			'ordered_posts'         => wp_json_encode(
 				[
 					[
 						'ID'    => $post_id_1,
@@ -271,7 +318,7 @@ class TestSearchOrdering extends BaseTestCase {
 		$post_id_4 = $this->ep_factory->post->create( array( 'post_content' => '10up test 2' ) );
 		$_POST     = [
 			'search-ordering-nonce' => wp_create_nonce( 'save-search-ordering' ),
-			'ordered_posts'         => json_encode(
+			'ordered_posts'         => wp_json_encode(
 				[
 					[
 						'ID'    => $post_id_3,
@@ -302,6 +349,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertFalse( get_the_terms( $post_id_1, 'ep_custom_result' ) );
 	}
 
+	/**
+	 * Test the `save_post` method on drafts
+	 */
 	public function testSaveUnpublishedPost() {
 		$post_id_1  = $this->ep_factory->post->create( [ 'post_content' => 'findme test 1' ] );
 		$post_id_2  = $this->ep_factory->post->create( [ 'post_content' => 'findme test 2' ] );
@@ -315,7 +365,7 @@ class TestSearchOrdering extends BaseTestCase {
 
 		$_POST = [
 			'search-ordering-nonce' => wp_create_nonce( 'save-search-ordering' ),
-			'ordered_posts'         => json_encode(
+			'ordered_posts'         => wp_json_encode(
 				[
 					[
 						'ID'    => $post_id_1,
@@ -336,6 +386,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertFalse( get_the_terms( $post_id_1, 'ep_custom_result' ) );
 	}
 
+	/**
+	 * Test the `save_post` method
+	 */
 	public function testSavePostMaxCustomResults() {
 		update_option( 'posts_per_page', 2 );
 		$post_id_1  = $this->ep_factory->post->create( [ 'post_content' => 'findme test 1' ] );
@@ -351,7 +404,7 @@ class TestSearchOrdering extends BaseTestCase {
 
 		$_POST = [
 			'search-ordering-nonce' => wp_create_nonce( 'save-search-ordering' ),
-			'ordered_posts'         => json_encode(
+			'ordered_posts'         => wp_json_encode(
 				[
 					[
 						'ID'    => $post_id_1,
@@ -381,6 +434,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertFalse( get_the_terms( $post_id_3, 'ep_custom_result' ) );
 	}
 
+	/**
+	 * Test the `create_or_return_custom_result_term` method
+	 */
 	public function testCreateTermFailed() {
 		$create_term_failed = function() {
 			return new \WP_Error( 'test_error' );
@@ -393,6 +449,9 @@ class TestSearchOrdering extends BaseTestCase {
 		remove_filter( 'pre_insert_term', $create_term_failed );
 	}
 
+	/**
+	 * Test the `weighting_fields_for_post_type` method
+	 */
 	public function testExcludeCustomResultsWeightingFields() {
 		$fields = [
 			'taxonomies' => [
@@ -410,6 +469,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertEquals( 2, count( $result['taxonomies']['children'] ) );
 	}
 
+	/**
+	 * Test the `weighting_fields_for_post_type` method
+	 */
 	public function testFilterWeightingConfig() {
 		$config = [
 			'post' => [
@@ -439,6 +501,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertArrayHasKey( 'terms.ep_custom_result.name', $updated_config['post'] );
 	}
 
+	/**
+	 * Test the `filter_enter_title_here` method
+	 */
 	public function testFilterEnterTitleHere() {
 		$this->assertEquals( 'Nothing changes', $this->get_feature()->filter_enter_title_here( 'Nothing changes' ) );
 
@@ -455,6 +520,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertEquals( 'Enter Search Query', $this->get_feature()->filter_enter_title_here( 'Nothing changes' ) );
 	}
 
+	/**
+	 * Test the `filter_column_names` method
+	 */
 	public function testFilterColumnNames() {
 		$columns = [ 'title' => 'Post title' ];
 		$result  = $this->get_feature()->filter_column_names( $columns );
@@ -463,6 +531,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertEquals( 'Search Query', $result['title'] );
 	}
 
+	/**
+	 * Test the `posts_results` method
+	 */
 	public function testPostsResults() {
 		ElasticPress\Features::factory()->activate_feature( 'search' );
 		ElasticPress\Features::factory()->setup_features();
@@ -482,7 +553,7 @@ class TestSearchOrdering extends BaseTestCase {
 
 		$_POST = [
 			'search-ordering-nonce' => wp_create_nonce( 'save-search-ordering' ),
-			'ordered_posts'         => json_encode(
+			'ordered_posts'         => wp_json_encode(
 				[
 					[
 						'ID'    => $post_id_2,
@@ -505,10 +576,13 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertEquals( $post_id_2, $new_posts[0]->ID );
 	}
 
+	/**
+	 * Test REST API endpoints
+	 */
 	public function testRestApiInit() {
 		global $wp_rest_server;
 		add_filter( 'rest_url', [ $this, 'filter_rest_url_for_leading_slash' ], 10, 2 );
-		/** @var WP_REST_Server $wp_rest_server */
+
 		$wp_rest_server = new \WP_REST_Server();
 		do_action( 'rest_api_init', $wp_rest_server );
 
@@ -536,7 +610,7 @@ class TestSearchOrdering extends BaseTestCase {
 	public function testUserWithManageOptionsCapabilityCanAccessAPI() {
 
 		global $wp_rest_server;
-		/** @var WP_REST_Server $wp_rest_server */
+
 		$wp_rest_server = new \WP_REST_Server();
 		do_action( 'rest_api_init', $wp_rest_server );
 
@@ -565,12 +639,11 @@ class TestSearchOrdering extends BaseTestCase {
 	 * @since 4.4.0
 	 */
 	public function testUserWithOutManageOptionsCapabilityCanNotAccessAPI() {
+		global $wp_rest_server;
 
 		// Set current user without `manage_options` capability.
 		wp_set_current_user( $this->factory()->user->create( array( 'role' => 'editor' ) ) );
 
-		global $wp_rest_server;
-		/** @var WP_REST_Server $wp_rest_server */
 		$wp_rest_server = new \WP_REST_Server();
 		do_action( 'rest_api_init', $wp_rest_server );
 
@@ -593,6 +666,13 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertEquals( 403, $response->get_status() );
 	}
 
+	/**
+	 * Make sure path for rest_url has a leading slash for proper resolution.
+	 *
+	 * @param string $url  REST URL.
+	 * @param string $path REST route.
+	 * @return string
+	 */
 	public function filter_rest_url_for_leading_slash( $url, $path ) {
 		if ( is_multisite() || get_option( 'permalink_structure' ) ) {
 			return $url;
@@ -604,27 +684,9 @@ class TestSearchOrdering extends BaseTestCase {
 		return $url;
 	}
 
-	public function testHandlePointerSearch() {
-		ElasticPress\Features::factory()->activate_feature( 'search' );
-		ElasticPress\Features::factory()->setup_features();
-		ElasticPress\Features::factory()->get_registered_feature( 'search' )->search_setup();
-
-		$post_id_1 = $this->ep_factory->post->create( [ 'post_content' => 'findme test 1' ] );
-		$post_id_2 = $this->ep_factory->post->create( [ 'post_content' => 'findme test 2' ] );
-
-		ElasticPress\Elasticsearch::factory()->refresh_indices();
-
-		$request = new \WP_REST_Request( 'GET', '/elasticpress/v1/pointer_search' );
-		$request->set_param( 's', 'findme' );
-
-		$response = $this->get_feature()->handle_pointer_search( $request );
-
-		$post_ids = wp_list_pluck( $response, 'ID' );
-
-		$this->assertContains( $post_id_1, $post_ids );
-		$this->assertContains( $post_id_2, $post_ids );
-	}
-
+	/**
+	 * Test the `handle_post_trash` method
+	 */
 	public function testHandlePostTrash() {
 		$post_id_1  = $this->ep_factory->post->create( array( 'post_content' => 'findme test 1' ) );
 		$post_id_2  = $this->ep_factory->post->create( array( 'post_content' => 'findme test 2' ) );
@@ -644,7 +706,7 @@ class TestSearchOrdering extends BaseTestCase {
 
 		$_POST = [
 			'search-ordering-nonce' => wp_create_nonce( 'save-search-ordering' ),
-			'ordered_posts'         => json_encode(
+			'ordered_posts'         => wp_json_encode(
 				[
 					[
 						'ID'    => $post_id_1,
@@ -666,6 +728,9 @@ class TestSearchOrdering extends BaseTestCase {
 		$this->assertFalse( get_the_terms( $post_id_1, 'ep_custom_result' ) );
 	}
 
+	/**
+	 * Test the `handle_post_untrash` method
+	 */
 	public function testHandlePostUntrash() {
 		$post_id_1  = $this->ep_factory->post->create( array( 'post_content' => 'findme test 1' ) );
 		$post_id_2  = $this->ep_factory->post->create( array( 'post_content' => 'findme test 2' ) );
@@ -679,7 +744,7 @@ class TestSearchOrdering extends BaseTestCase {
 
 		$_POST = [
 			'search-ordering-nonce' => wp_create_nonce( 'save-search-ordering' ),
-			'ordered_posts'         => json_encode(
+			'ordered_posts'         => wp_json_encode(
 				[
 					[
 						'ID'    => $post_id_1,

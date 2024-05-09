@@ -21,7 +21,7 @@ class TestPost extends BaseTestCase {
 	 */
 	public $is_404 = false;
 
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass(): void {
 		// VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
 		if ( ! defined( 'EP_HOST' )) {
 			define( 'EP_HOST', \ElasticPress\Utils\get_host() );

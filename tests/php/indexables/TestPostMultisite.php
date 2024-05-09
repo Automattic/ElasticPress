@@ -18,7 +18,7 @@ class TestPostMultisite extends BaseTestCase {
 
 	public static function setUpBeforeClass(): void {
 		// VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
-		if ( ! defined( 'EP_HOST' )) {
+		if ( ! defined( 'EP_HOST' ) ) {
 			define( 'EP_HOST', \ElasticPress\Utils\get_host() );
 		}
 	}
@@ -272,7 +272,7 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'findme',
+			's'     => 'findme',
 			'sites' => array( $sites[1]['blog_id'], $sites[2]['blog_id'] ),
 		);
 
@@ -313,7 +313,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		// 200 is an invalid blog_id which we're going to pass to test
 		$args = array(
-			's'        => 'findme',
+			's'     => 'findme',
 			'sites' => array( $sites[1]['blog_id'], $sites[2]['blog_id'], 200 ),
 		);
 
@@ -353,7 +353,7 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'findme',
+			's'     => 'findme',
 			'sites' => $sites[1]['blog_id'],
 		);
 
@@ -395,7 +395,7 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'findme',
+			's'     => 'findme',
 			'sites' => 'all',
 		);
 
@@ -451,8 +451,8 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'findme',
-			'sites'    => 'all',
+			's'     => 'findme',
+			'sites' => 'all',
 		);
 
 		$query = new \WP_Query( $args );
@@ -498,8 +498,8 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'findme',
-			'sites'    => 'all',
+			's'     => 'findme',
+			'sites' => 'all',
 		);
 
 		$query = new \WP_Query( $args );
@@ -561,7 +561,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'         => 'findme',
-			'sites'  => 'all',
+			'sites'     => 'all',
 			'tax_query' => array(
 				array(
 					'taxonomy' => 'post_tag',
@@ -671,7 +671,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'         => 'findme',
-			'sites'  => 'all',
+			'sites'     => 'all',
 			'post_type' => 'post',
 		);
 
@@ -722,7 +722,7 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'findme',
+			's'     => 'findme',
 			'sites' => 'all',
 		);
 
@@ -774,7 +774,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			'ep_integrate' => true,
-			'sites'     => 'all',
+			'sites'        => 'all',
 		);
 
 		$query = new \WP_Query( $args );
@@ -831,9 +831,9 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'findme',
-			'sites' => 'all',
-			'author'   => $user_id,
+			's'      => 'findme',
+			'sites'  => 'all',
+			'author' => $user_id,
 		);
 
 		$query = new \WP_Query( $args );
@@ -895,7 +895,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'           => 'findme',
-			'sites'    => 'all',
+			'sites'       => 'all',
 			'author_name' => 'john',
 		);
 
@@ -949,7 +949,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'             => 'findme',
-			'sites'      => 'all',
+			'sites'         => 'all',
 			'search_fields' => array(
 				'post_title',
 				'post_excerpt',
@@ -1033,7 +1033,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'          => 'findme',
-			'sites'   => 'all',
+			'sites'      => 'all',
 			'meta_query' => array(
 				array(
 					'key'   => 'test_key',
@@ -1102,7 +1102,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'             => 'one findme two',
-			'sites'      => 'all',
+			'sites'         => 'all',
 			'search_fields' => array(
 				'post_title',
 				'post_excerpt',
@@ -1171,7 +1171,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'             => 'john boy',
-			'sites'      => 'all',
+			'sites'         => 'all',
 			'search_fields' => array(
 				'post_title',
 				'post_excerpt',
@@ -1257,7 +1257,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'             => 'findme',
-			'sites'      => 'all',
+			'sites'         => 'all',
 			'post_type'     => 'ep_test',
 			'author'        => $user_id,
 			'search_fields' => array(
@@ -1304,7 +1304,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'              => 'findme',
-			'sites'       => 'all',
+			'sites'          => 'all',
 			'posts_per_page' => 2,
 		);
 
@@ -1321,7 +1321,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'              => 'findme',
-			'sites'       => 'all',
+			'sites'          => 'all',
 			'posts_per_page' => 2,
 			'paged'          => 2,
 		);
@@ -1378,7 +1378,7 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'notfirstblog',
+			's'     => 'notfirstblog',
 			'sites' => 'all',
 		);
 
@@ -1443,7 +1443,7 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'notfirstblog',
+			's'     => 'notfirstblog',
 			'sites' => 'all',
 		);
 
@@ -1512,7 +1512,7 @@ class TestPostMultisite extends BaseTestCase {
 		}
 
 		$args = array(
-			's'        => 'notfirstblog',
+			's'     => 'notfirstblog',
 			'sites' => (int) $sites[1]['blog_id'],
 		);
 
@@ -1653,7 +1653,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'              => 'findme',
-			'sites'       => 'all',
+			'sites'          => 'all',
 			'posts_per_page' => 10,
 		);
 
@@ -1810,7 +1810,7 @@ class TestPostMultisite extends BaseTestCase {
 
 		$args = array(
 			's'            => 'findme',
-			'sites'     => $sites[1]['blog_id'],
+			'sites'        => $sites[1]['blog_id'],
 			'site__not_in' => $sites[1]['blog_id'],
 		);
 

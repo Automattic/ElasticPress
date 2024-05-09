@@ -194,8 +194,8 @@ class TestProtectedContent extends BaseTestCase {
 		ElasticPress\Features::factory()->activate_feature( 'protected_content' );
 		ElasticPress\Features::factory()->setup_features();
 
-		$cat1 = $this->factory->category->create( array ( 'name' => 'category one' ) );
-		$cat2 = $this->factory->category->create( array ( 'name' => 'category two' ) );
+		$cat1 = $this->factory->category->create( array( 'name' => 'category one' ) );
+		$cat2 = $this->factory->category->create( array( 'name' => 'category two' ) );
 
 		$this->ep_factory->post->create( array( 'post_category' => array( $cat1 ) ) );
 		$this->ep_factory->post->create( array( 'post_category' => array( $cat2 ) ) );
@@ -275,7 +275,8 @@ class TestProtectedContent extends BaseTestCase {
 			array(
 				'ID'            => $post_id,
 				'post_password' => '',
-		) );
+			)
+		);
 
 		ElasticPress\Indexables::factory()->get( 'post' )->index( $post_id, true );
 		ElasticPress\Elasticsearch::factory()->refresh_indices();
@@ -290,7 +291,8 @@ class TestProtectedContent extends BaseTestCase {
 			array(
 				'ID'            => $post_id,
 				'post_password' => 'test',
-		) );
+			)
+		);
 
 		ElasticPress\Indexables::factory()->get( 'post' )->index( $post_id, true );
 		ElasticPress\Elasticsearch::factory()->refresh_indices();
@@ -318,7 +320,7 @@ class TestProtectedContent extends BaseTestCase {
 			array(
 				'post_title'    => 'findmetitle 123',
 				'post_content'  => 'findmecontent 123',
-				'post_password' => 'test'
+				'post_password' => 'test',
 			)
 		);
 

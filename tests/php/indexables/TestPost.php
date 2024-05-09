@@ -23,7 +23,7 @@ class TestPost extends BaseTestCase {
 
 	public static function setUpBeforeClass(): void {
 		// VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
-		if ( ! defined( 'EP_HOST' )) {
+		if ( ! defined( 'EP_HOST' ) ) {
 			define( 'EP_HOST', \ElasticPress\Utils\get_host() );
 		}
 	}
@@ -7454,7 +7454,12 @@ class TestPost extends BaseTestCase {
 		$this->assertEquals( $expected_result, get_the_excerpt( $query->posts[0] ) );
 
 		// test post without excerpt
-		$this->ep_factory->post->create( array( 'post_content' => 'new post', 'post_excerpt' => '' ) );
+		$this->ep_factory->post->create(
+			array(
+				'post_content' => 'new post',
+				'post_excerpt' => '',
+			)
+		);
 		ElasticPress\Elasticsearch::factory()->refresh_indices();
 
 		$args  = array(
@@ -7494,7 +7499,7 @@ class TestPost extends BaseTestCase {
 			3
 		);
 
-		$args = array(
+		$args  = array(
 			's'            => '',
 			'ep_integrate' => true,
 		);

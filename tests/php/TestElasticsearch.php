@@ -60,7 +60,7 @@ class TestElasticsearch extends BaseTestCase {
 	 */
 	public function testGetDocuments() {
 
-		$post_ids = array();
+		$post_ids   = array();
 		$post_ids[] = $this->ep_factory->post->create();
 		$post_ids[] = $this->ep_factory->post->create();
 
@@ -90,7 +90,7 @@ class TestElasticsearch extends BaseTestCase {
 		$this->assertIsArray( $documents );
 		$this->assertEmpty( $documents );
 
-		$documents = ElasticPress\Elasticsearch::factory()->get_documents( $index_name, 'post', []  );
+		$documents = ElasticPress\Elasticsearch::factory()->get_documents( $index_name, 'post', [] );
 
 		$this->assertIsArray( $documents );
 		$this->assertEmpty( $documents );

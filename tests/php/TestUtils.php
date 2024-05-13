@@ -136,7 +136,7 @@ class TestUtils extends BaseTestCase {
 		$creds = \ElasticPress\Utils\sanitize_credentials(
 			[
 				'username' => '<strong>hello</strong> world',
-				'token' => 'able <script>alert("baker");</script>',
+				'token'    => 'able <script>alert("baker");</script>',
 			]
 		);
 
@@ -152,7 +152,7 @@ class TestUtils extends BaseTestCase {
 		$creds = \ElasticPress\Utils\sanitize_credentials(
 			[
 				'username' => 'my-user-name',
-				'token' => 'my-token',
+				'token'    => 'my-token',
 			]
 		);
 

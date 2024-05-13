@@ -254,17 +254,17 @@ class TestWooCommerce extends BaseTestCase {
 		$this->assertTrue( class_exists( '\WC_Product_Variation' ) );
 
 		$main_product = new \WC_Product_Variable();
-		$main_product->set_sku('main-product_sku');
+		$main_product->set_sku( 'main-product_sku' );
 		$main_product_id = $main_product->save();
 
 		$variation_1 = new \WC_Product_Variation();
 		$variation_1->set_parent_id( $main_product_id );
-		$variation_1->set_sku('child-sku-1');
+		$variation_1->set_sku( 'child-sku-1' );
 		$variation_1->save();
 
 		$variation_2 = new \WC_Product_Variation();
 		$variation_2->set_parent_id( $main_product_id );
-		$variation_2->set_sku('child-sku-2');
+		$variation_2->set_sku( 'child-sku-2' );
 		$variation_2->save();
 
 		$main_product_as_post  = get_post( $main_product_id );

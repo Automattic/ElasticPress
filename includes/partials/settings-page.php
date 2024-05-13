@@ -37,8 +37,7 @@ $bulk_setting = Utils\get_option( 'ep_bulk_setting', 350 );
 <div class="wrap">
 	<h1><?php esc_html_e( 'Settings', 'elasticpress' ); ?></h1>
 
-	<form action="
-	<?php echo esc_attr( $action ); // phpcs:ignore WordPressVIPMinimum.Security.ProperEscapingFunction.hrefSrcEscUrl ?>" method="post" class="ep-settings">
+	<form action="<?php echo esc_url( $action ); ?>" method="post" class="ep-settings">
 		<?php settings_fields( 'elasticpress' ); ?>
 		<?php settings_errors(); ?>
 

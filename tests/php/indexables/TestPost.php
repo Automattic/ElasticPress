@@ -7522,29 +7522,30 @@ class TestPost extends BaseTestCase {
 	 */
 	public function testQueryWithUnSupportedOrderByDoesNotUseEP() {
 		// test for post__in
-		$query = new \WP_Query( array(
-			'orderby' => 'post__in',
+		$query = new \WP_Query(
+			array(
+			'orderby'      => 'post__in',
 			'ep_integrate' => true,
 		) );
 		$this->assertNull( $query->elasticsearch_success  );
 
 		// test for post_name__in
 		$query = new \WP_Query( array(
-			'orderby' => 'post_name__in',
+			'orderby'      => 'post_name__in',
 			'ep_integrate' => true,
 		) );
 		$this->assertNull( $query->elasticsearch_success  );
 
 		// test for post_parent__in
 		$query = new \WP_Query( array(
-			'orderby' => 'post_parent__in',
+			'orderby'      => 'post_parent__in',
 			'ep_integrate' => true,
 		) );
 		$this->assertNull(  $query->elasticsearch_success  );
 
 		// test for parent
 		$query = new \WP_Query( array(
-			'orderby' => 'parent',
+			'orderby'      => 'parent',
 			'ep_integrate' => true,
 		) );
 		$this->assertNull(  $query->elasticsearch_success  );

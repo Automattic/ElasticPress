@@ -7544,7 +7544,8 @@ class TestPost extends BaseTestCase {
 			array(
 				'orderby'      => 'post_parent__in',
 				'ep_integrate' => true,
-			) );
+			)
+		);
 		$this->assertNull( $query->elasticsearch_success );
 
 		// test for parent

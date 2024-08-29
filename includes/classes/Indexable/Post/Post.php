@@ -74,7 +74,7 @@ class Post extends Indexable {
 			'order'                           => 'desc',
 			'no_found_rows'                   => false,
 			'ep_indexing_advanced_pagination' => true,
-			'has_password'                    => true,
+			'has_password'                    => null,
 		];
 
 		if ( isset( $args['per_page'] ) ) {

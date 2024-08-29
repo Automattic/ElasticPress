@@ -5804,22 +5804,22 @@ class TestPost extends BaseTestCase {
 		);
 
 		$post_ids = wp_list_pluck( $results['objects'], 'ID' );
-		$this->assertEquals( $post_id_3, $post_ids[0] );
+		$this->assertEquals( $post_id_4, $post_ids[0] );
 		$this->assertCount( 1, $results['objects'] );
-		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertEquals( 4, $results['total_objects'] );
 
 		// Second loop.
 		$results = $indexable_post_object->query_db(
 			[
 				'per_page'                             => 1,
-				'ep_indexing_last_processed_object_id' => $post_id_3,
+				'ep_indexing_last_processed_object_id' => $post_id_4,
 			]
 		);
 
 		$post_ids = wp_list_pluck( $results['objects'], 'ID' );
-		$this->assertEquals( $post_id_2, $post_ids[0] );
+		$this->assertEquals( $post_id_3, $post_ids[0] );
 		$this->assertCount( 1, $results['objects'] );
-		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertEquals( 4, $results['total_objects'] );
 
 		// A custom upper_limit_object_id was passed in.
 		$results = $indexable_post_object->query_db(
@@ -5869,13 +5869,13 @@ class TestPost extends BaseTestCase {
 		);
 
 		$post_ids = wp_list_pluck( $results['objects'], 'ID' );
-		$this->assertEquals( $post_id_2, $post_ids[0] );
-		$this->assertCount( 2, $results['objects'] );
-		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertEquals( $post_id_3, $post_ids[0] );
+		$this->assertCount( 3, $results['objects'] );
+		$this->assertEquals( 4, $results['total_objects'] );
 
 		$results = $indexable_post_object->query_db(
 			[
-				'offset' => 3,
+				'offset' => 4,
 			]
 		);
 
@@ -5888,8 +5888,8 @@ class TestPost extends BaseTestCase {
 			]
 		);
 
-		$this->assertCount( 3, $results['objects'] );
-		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertCount( 4, $results['objects'] );
+		$this->assertEquals( 4, $results['total_objects'] );
 
 		// Test the first loop of the indexing.
 		$results = $indexable_post_object->query_db(

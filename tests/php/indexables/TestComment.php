@@ -40,7 +40,7 @@ class TestComment extends BaseTestCase {
 		ElasticPress\Elasticsearch::factory()->delete_all_indices();
 		ElasticPress\Indexables::factory()->get( 'comment' )->put_mapping();
 
-		ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->reset_sync_queue();
 
 		// Need to call this since it's hooked to init.
 		ElasticPress\Features::factory()->get_registered_feature( 'comments' )->search_setup();
@@ -149,7 +149,7 @@ class TestComment extends BaseTestCase {
 			]
 		);
 
-		$this->assertEquals( 1, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->sync_queue ) );
+		$this->assertEquals( 1, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->get_sync_queue() ) );
 
 		ElasticPress\Indexables::factory()->get( 'comment' )->index( $comment_id );
 
@@ -209,7 +209,7 @@ class TestComment extends BaseTestCase {
 
 		update_comment_meta( $comment_id, 'test_key', true );
 
-		$this->assertEquals( 1, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->sync_queue ) );
+		$this->assertEquals( 1, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->get_sync_queue() ) );
 		$this->assertnotEmpty( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->add_to_queue( $comment_id ) );
 	}
 
@@ -633,7 +633,7 @@ class TestComment extends BaseTestCase {
 
 		ElasticPress\Elasticsearch::factory()->refresh_indices();
 
-		$this->assertEquals( 1, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->sync_queue ) );
+		$this->assertEquals( 1, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->get_sync_queue() ) );
 
 		ElasticPress\Indexables::factory()->get( 'comment' )->index( $comment_id );
 
@@ -2353,7 +2353,7 @@ class TestComment extends BaseTestCase {
 			]
 		);
 
-		$this->assertEquals( 0, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->sync_queue ) );
+		$this->assertEquals( 0, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->get_sync_queue() ) );
 
 		$shop_order_comment = ElasticPress\Indexables::factory()->get( 'comment' )->get( $shop_order_id );
 
@@ -2393,7 +2393,7 @@ class TestComment extends BaseTestCase {
 			]
 		);
 
-		$this->assertEquals( 0, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->sync_queue ) );
+		$this->assertEquals( 0, count( ElasticPress\Indexables::factory()->get( 'comment' )->sync_manager->get_sync_queue() ) );
 
 		$shop_order_comment = ElasticPress\Indexables::factory()->get( 'comment' )->get( $shop_order_id );
 

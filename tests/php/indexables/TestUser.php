@@ -36,7 +36,7 @@ class TestUser extends BaseTestCase {
 		ElasticPress\Indexables::factory()->get( 'user' )->delete_index();
 		ElasticPress\Indexables::factory()->get( 'user' )->put_mapping();
 
-		ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->reset_sync_queue();
 
 		$admin_id = $this->factory->user->create(
 			[
@@ -76,7 +76,7 @@ class TestUser extends BaseTestCase {
 	public function createAndIndexUsers() {
 		ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->add_to_queue( 1 );
 
-		ElasticPress\Indexables::factory()->get( 'user' )->bulk_index( array_keys( ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->sync_queue ) );
+		ElasticPress\Indexables::factory()->get( 'user' )->bulk_index( array_keys( ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->get_sync_queue() ) );
 
 		$user_1 = $this->ep_factory->user->create(
 			[
@@ -158,7 +158,7 @@ class TestUser extends BaseTestCase {
 			}
 		);
 
-		ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->reset_sync_queue();
 
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 
@@ -203,7 +203,7 @@ class TestUser extends BaseTestCase {
 	public function testUserSyncOnMetaUpdate() {
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 
-		ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'user' )->sync_manager->reset_sync_queue();
 
 		update_user_meta( $user_id, 'test_key', true );
 

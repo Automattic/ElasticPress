@@ -17,7 +17,6 @@ jobs:
     name: ${{ matrix.type.name }} - ES ${{ matrix.esVersion }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         esVersion: ['7.17.8', '8.18.1']
         type:
@@ -36,6 +35,18 @@ jobs:
 
     - name: Check ES response
       run: curl --connect-timeout 5 --max-time 10 --retry 5 --retry-max-time 40 --retry-all-errors http://127.0.0.1:8890
+
+    - name: Set standard 10up cache directories
+      run: |
+        composer config -g cache-dir "${{ env.COMPOSER_CACHE }}"
+
+    - name: Prepare composer cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.COMPOSER_CACHE }}
+        key: composer-${{ env.COMPOSER_VERSION }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          composer-${{ env.COMPOSER_VERSION }}-
 
     - name: Set PHP version
       uses: shivammathur/setup-php@v2

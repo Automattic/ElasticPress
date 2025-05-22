@@ -31,7 +31,7 @@ jobs:
     - name: Setup Elasticsearch
       uses: getong/elasticsearch-action@v1.2
       with:
-        elasticsearch version: '7.5.0'
+        elasticsearch version: '7.17.8'
 
     - name: Set PHP version
       uses: shivammathur/setup-php@v2

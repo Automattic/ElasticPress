@@ -11,8 +11,12 @@ on:
 
 jobs:
   phpunit:
-    name: PHP Unit
+    name: PHP Unit (Elasticsearch ${{ matrix.elasticsearch }})
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        elasticsearch: ['7.17.8', '8.18.1']
 
     steps:
     - name: Checkout
@@ -31,7 +35,7 @@ jobs:
     - name: Setup Elasticsearch
       uses: getong/elasticsearch-action@v1.2
       with:
-        elasticsearch version: '7.5.0'
+        elasticsearch version: ${{ matrix.elasticsearch }}
 
     - name: Set PHP version
       uses: shivammathur/setup-php@v2

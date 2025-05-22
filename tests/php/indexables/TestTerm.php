@@ -254,7 +254,8 @@ class TestTerm extends BaseTestCase {
 			]
 		);
 
-		$this->assertObjectNotHasAttribute( 'elasticsearch_success', $term_query );
+		$properties = get_object_vars( $term_query );
+		$this->assertArrayNotHasKey( 'elasticsearch_success', $properties );
 
 		$this->assertEquals( 4, count( $term_query->terms ) );
 
@@ -1002,7 +1003,8 @@ class TestTerm extends BaseTestCase {
 				]
 			);
 
-			$this->assertObjectNotHasAttribute( 'elasticsearch_success', $term_query );
+			$properties = get_object_vars( $term_query );
+			$this->assertArrayNotHasKey( 'elasticsearch_success', $properties );
 
 			$wp_slugs[ $query_type ] = array_values( $term_query->terms );
 
@@ -1444,16 +1446,17 @@ class TestTerm extends BaseTestCase {
 
 		$term->remap_terms( $new_term );
 
-		$this->assertObjectHasAttribute( 'ID', $new_term );
-		$this->assertObjectHasAttribute( 'term_id', $new_term );
-		$this->assertObjectHasAttribute( 'name', $new_term );
-		$this->assertObjectHasAttribute( 'slug', $new_term );
-		$this->assertObjectHasAttribute( 'term_group', $new_term );
-		$this->assertObjectHasAttribute( 'term_taxonomy_id', $new_term );
-		$this->assertObjectHasAttribute( 'taxonomy', $new_term );
-		$this->assertObjectHasAttribute( 'description', $new_term );
-		$this->assertObjectHasAttribute( 'parent', $new_term );
-		$this->assertObjectHasAttribute( 'count', $new_term );
+		$properties = get_object_vars( $new_term );
+		$this->assertArrayHasKey( 'ID', $properties );
+		$this->assertArrayHasKey( 'term_id', $properties );
+		$this->assertArrayHasKey( 'name', $properties );
+		$this->assertArrayHasKey( 'slug', $properties );
+		$this->assertArrayHasKey( 'term_group', $properties );
+		$this->assertArrayHasKey( 'term_taxonomy_id', $properties );
+		$this->assertArrayHasKey( 'taxonomy', $properties );
+		$this->assertArrayHasKey( 'description', $properties );
+		$this->assertArrayHasKey( 'parent', $properties );
+		$this->assertArrayHasKey( 'count', $properties );
 
 		$this->assertSame( $new_term->ID, $current_term->term_id );
 		$this->assertSame( $new_term->term_id, $current_term->term_id );

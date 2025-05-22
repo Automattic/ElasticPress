@@ -73,7 +73,9 @@ class TestStats extends BaseTestCase {
 
 		$this->assertEquals( 1, $totals['docs'] );
 		$this->assertTrue( ! empty( $totals['size'] ) );
-		$this->assertTrue( ! empty( $totals['memory'] ) );
+		$this->assertTrue( isset( $totals['memory'] ) );
+
+		$this->markTestIncomplete( 'Memory numbers are always 0 with Elasticsearch 8.x' );
 	}
 
 	/**

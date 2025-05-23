@@ -107,8 +107,6 @@ class TestInstaller extends BaseTestCase {
 		$install_status = ElasticPress\Installer::factory()->get_install_status();
 
 		$this->assertEquals( 2, $install_status );
-
-		remove_all_filters( 'ep_host' );
 	}
 
 	/**
@@ -128,5 +126,4 @@ class TestInstaller extends BaseTestCase {
 
 		$this->assertEquals( 3, $install_status );
 	}
-
 }

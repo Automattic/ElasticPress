@@ -73,6 +73,7 @@ class TestSearchOrdering extends BaseTestCase {
 	 */
 	public function testConstruct() {
 		$instance = new \ElasticPress\Feature\SearchOrdering\SearchOrdering();
+
 		$this->assertSame( 'searchordering', $instance->slug );
 		$this->assertSame( 'Custom Search Results', $instance->title );
 	}
@@ -123,8 +124,6 @@ class TestSearchOrdering extends BaseTestCase {
 	 * Test the `admin_menu` method
 	 */
 	public function testAdminMenu() {
-		$site_url = trailingslashit( get_option( 'siteurl' ) );
-
 		add_menu_page(
 			'ElasticPress',
 			'ElasticPress',
@@ -267,7 +266,6 @@ class TestSearchOrdering extends BaseTestCase {
 
 		$return = $this->get_feature()->save_post( $pointer_id, get_post( $pointer_id ) );
 		$this->assertNull( $return );
-
 	}
 
 	/**
@@ -438,15 +436,13 @@ class TestSearchOrdering extends BaseTestCase {
 	 * Test the `create_or_return_custom_result_term` method
 	 */
 	public function testCreateTermFailed() {
-		$create_term_failed = function() {
+		$create_term_failed = function () {
 			return new \WP_Error( 'test_error' );
 		};
 
 		add_filter( 'pre_insert_term', $create_term_failed );
 
 		$this->assertFalse( $this->get_feature()->create_or_return_custom_result_term( 'test' ) );
-
-		remove_filter( 'pre_insert_term', $create_term_failed );
 	}
 
 	/**
@@ -598,8 +594,6 @@ class TestSearchOrdering extends BaseTestCase {
 		$request  = new \WP_REST_Request( 'GET', '/elasticpress/v1/pointer_preview' );
 		$response = $wp_rest_server->dispatch( $request );
 		$this->assertEquals( 400, $response->get_status() );
-
-		remove_filter( 'rest_url', [ $this, 'filter_rest_url_for_leading_slash' ], 10, 2 );
 	}
 
 	/**
@@ -608,7 +602,6 @@ class TestSearchOrdering extends BaseTestCase {
 	 * @since 4.4.0
 	 */
 	public function testUserWithManageOptionsCapabilityCanAccessAPI() {
-
 		global $wp_rest_server;
 
 		$wp_rest_server = new \WP_REST_Server();

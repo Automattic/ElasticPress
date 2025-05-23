@@ -7,7 +7,7 @@
 
 namespace ElasticPressTest;
 
-use ElasticPress\Features as Features;
+use ElasticPress\Features;
 
 /**
  * Facet test class
@@ -105,6 +105,10 @@ class TestFacet extends BaseTestCase {
 
 		$this->assertEquals( '/?ep_filter_category=augue%2Cconsectetur', $facet_feature->build_query_url( $filters ) );
 
+		// test when search parameter is empty.
+		$filters['s'] = '';
+		$this->assertEquals( '/?ep_filter_category=augue%2Cconsectetur&s=', $facet_feature->build_query_url( $filters ) );
+
 		$_SERVER['REQUEST_URI'] = 'test/page/1';
 
 		$filters['s'] = 'dolor';
@@ -125,13 +129,36 @@ class TestFacet extends BaseTestCase {
 		/**
 		 * (Indirectly) test the `ep_facet_filter_name` filter
 		 */
-		$change_ep_facet_filter_name = function( $original_name ) {
+		$change_ep_facet_filter_name = function ( $original_name ) {
 			$this->assertEquals( 'ep_filter_', $original_name );
 			return 'ep_custom_filter_';
 		};
 		add_filter( 'ep_facet_filter_name', $change_ep_facet_filter_name );
 		$this->assertEquals( 'test/?ep_custom_filter_category=augue%2Cconsectetur&s=dolor', $facet_feature->build_query_url( $filters ) );
 		remove_filter( 'ep_facet_filter_name', $change_ep_facet_filter_name );
+	}
+
+	/**
+	 * Test set_agg_filters
+	 *
+	 * @since 4.3.0
+	 * @group facets
+	 */
+	public function testSetAggFilter() {
+		$facet_feature = Features::factory()->get_registered_feature( 'facets' );
+
+		$args = [
+			'aggs' => [
+				'terms' => [],
+			],
+		];
+
+		$query_args = [];
+
+		$query = new \WP_Query();
+
+		// No `ep_facet` in query_args will make it return the same array.
+		$this->assertSame( $args, $facet_feature->set_agg_filters( $args, $query_args, $query ) );
 	}
 
 	/**

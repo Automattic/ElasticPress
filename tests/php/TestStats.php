@@ -8,6 +8,9 @@
 namespace ElasticPressTest;
 
 use ElasticPress;
+use ElasticPress\Elasticsearch;
+use ElasticPress\Indexables;
+use ElasticPress\Stats;
 
 /**
  * Stats test class
@@ -29,10 +32,10 @@ class TestStats extends BaseTestCase {
 
 		wp_set_current_user( $admin_id );
 
-		ElasticPress\Elasticsearch::factory()->delete_all_indices();
-		ElasticPress\Indexables::factory()->get( 'post' )->put_mapping();
+		Elasticsearch::factory()->delete_all_indices();
+		Indexables::factory()->get( 'post' )->put_mapping();
 
-		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->reset_sync_queue();
+		Indexables::factory()->get( 'post' )->sync_manager->reset_sync_queue();
 
 		$this->setup_test_post_type();
 
@@ -65,11 +68,11 @@ class TestStats extends BaseTestCase {
 	 */
 	public function testTotals() {
 		$this->ep_factory->post->create();
-		ElasticPress\Elasticsearch::factory()->refresh_indices();
+		Elasticsearch::factory()->refresh_indices();
 
-		ElasticPress\Stats::factory()->build_stats();
+		Stats::factory()->build_stats();
 
-		$totals = ElasticPress\Stats::factory()->get_totals();
+		$totals = Stats::factory()->get_totals();
 
 		$this->assertEquals( 1, $totals['docs'] );
 		$this->assertTrue( ! empty( $totals['size'] ) );
@@ -86,11 +89,11 @@ class TestStats extends BaseTestCase {
 	 */
 	public function testHealth() {
 		$this->ep_factory->post->create();
-		ElasticPress\Elasticsearch::factory()->refresh_indices();
+		Elasticsearch::factory()->refresh_indices();
 
-		ElasticPress\Stats::factory()->build_stats();
+		Stats::factory()->build_stats();
 
-		$health = ElasticPress\Stats::factory()->get_health();
+		$health = Stats::factory()->get_health();
 
 		$this->assertEquals( 1, count( $health ) );
 		$this->assertEquals( 'exampleorg-post-1', array_keys( $health )[0] );

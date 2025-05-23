@@ -15,11 +15,11 @@ use ElasticPress\Feature\Search\Synonyms;
  */
 class TestSynonyms extends BaseTestCase {
 
-		/**
-		 * Setup each test.
-		 *
-		 * @since 3.5
-		 */
+	/**
+	 * Setup each test.
+	 *
+	 * @since 3.5
+	 */
 	public function set_up() {
 		global $wpdb;
 		parent::set_up();
@@ -46,8 +46,6 @@ class TestSynonyms extends BaseTestCase {
 	public function tear_down() {
 		parent::tear_down();
 
-		// make sure no one attached to this
-		remove_filter( 'ep_sync_terms_allow_hierarchy', array( $this, 'ep_allow_multiple_level_terms_sync' ), 100 );
 		$this->fired_actions = array();
 	}
 
@@ -126,5 +124,47 @@ class TestSynonyms extends BaseTestCase {
 		$this->assertFalse( $instance->validate_synonym( '// Comments are not valid.' ) );
 		$this->assertEquals( 'foo, bar', $instance->validate_synonym( ' foo, bar ' ) );
 		$this->assertEquals( 'foo => bar', $instance->validate_synonym( ' foo => bar ' ) );
+	}
+
+	/**
+	 * Tests synonyms are case insensitive
+	 *
+	 * @since 5.1.0
+	 * @group synonyms
+	 */
+	public function test_synonyms_case_insensitive() {
+		$instance = $this->getFeature();
+
+		$this->ep_factory->post->create(
+			[
+				'ID'           => $instance->get_synonym_post_id(),
+				'post_content' => 'hoodie, sweatshirt',
+				'post_type'    => $instance::POST_TYPE_NAME,
+			]
+		);
+
+		$instance->update_synonyms();
+
+		$post_id = $this->ep_factory->post->create( [ 'post_content' => 'sweatshirt' ] );
+
+		ElasticPress\Elasticsearch::factory()->refresh_indices();
+
+		$query = new \WP_Query(
+			[
+				's'      => 'HoOdiE',
+				'fields' => 'ids',
+			]
+		);
+		$this->assertTrue( $query->elasticsearch_success );
+		$this->assertSame( $post_id, $query->posts['0'] );
+
+		$query = new \WP_Query(
+			[
+				's'      => 'HOODIE',
+				'fields' => 'ids',
+			]
+		);
+		$this->assertTrue( $query->elasticsearch_success );
+		$this->assertSame( $post_id, $query->posts['0'] );
 	}
 }

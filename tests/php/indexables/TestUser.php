@@ -13,6 +13,7 @@ use ElasticPress;
  * Test user indexable class
  */
 class TestUser extends BaseTestCase {
+
 	/**
 	 * Checking if HTTP request returns 404 status code.
 	 *
@@ -1459,11 +1460,145 @@ class TestUser extends BaseTestCase {
 			2
 		);
 
+		add_filter(
+			'ep_user_query_db_count_objects_sql',
+			function () use ( $wpdb, $user_id ) {
+				return $wpdb->prepare(
+					"SELECT COUNT(ID) FROM {$wpdb->users} WHERE ID = %d",
+					$user_id
+				);
+			},
+			10,
+			2
+		);
+
 		$user    = ElasticPress\Indexables::factory()->get( 'user' );
-		$results = $user->query_db( [] );
+		$results = $user->query_db(
+			[
+				'ep_indexing_advanced_pagination' => true,
+			]
+		);
 
 		$this->assertCount( 1, $results['objects'] );
 		$this->assertEquals( $user_id, $results['objects'][0]->ID );
 		$this->assertEquals( 1, $results['total_objects'] );
+	}
+
+	/**
+	 * Test query_db() function.
+	 *
+	 * Ported from ElasticPressLabs 3623f1b (#144).
+	 *
+	 * @since 4.1.0
+	 * @group user
+	 */
+	public function test_query_db() {
+		$this->ep_factory->user->create_many( 10 );
+
+		$indexable = ElasticPress\Indexables::factory()->get( 'user' );
+
+		$results = $indexable->query_db( [] );
+
+		// 12 because 2 are created by the setup
+		$this->assertEquals( 12, $results['total_objects'] );
+		$this->assertCount( 12, $results['objects'] );
+
+		$results = $indexable->query_db( [ 'per_page' => 5 ] );
+		$this->assertCount( 5, $results['objects'] );
+		$this->assertEquals( 12, $results['total_objects'] );
+
+		// // get test_admin user.
+		$test_admin = get_user_by( 'login', 'test_admin' );
+
+		$results = $indexable->query_db( [ 'include' => $test_admin->ID ] );
+		$this->assertCount( 1, $results['objects'] );
+		$this->assertEquals( 1, $results['total_objects'] );
+
+		$results = $indexable->query_db( [ 'exclude' => $test_admin->ID ] );
+		$this->assertCount( 11, $results['objects'] );
+		$this->assertEquals( 11, $results['total_objects'] );
+	}
+
+	/**
+	 * Test query_db() function lower and upper limit.
+	 *
+	 * Ported from ElasticPressLabs 3623f1b (#144).
+	 *
+	 * @since 4.1.0
+	 * @group user
+	 */
+	public function test_query_db_with_limit() {
+		$user_1_id = $this->ep_factory->user->create();
+
+		$this->ep_factory->user->create_many( 5 );
+
+		$user_2_id = $this->ep_factory->user->create();
+		$indexable = ElasticPress\Indexables::factory()->get( 'user' );
+
+		$results = $indexable->query_db(
+			[
+				'ep_indexing_lower_limit_object_id' => $user_2_id,
+			]
+		);
+
+		$this->assertCount( 1, $results['objects'] );
+		$this->assertEquals( $user_2_id, $results['objects'][0]->ID );
+		$this->assertEquals( 1, $results['total_objects'] );
+
+		$results = $indexable->query_db(
+			[
+				'ep_indexing_upper_limit_object_id' => $user_1_id,
+			]
+		);
+
+		$this->assertCount( 3, $results['objects'] );
+		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertEquals( $user_1_id, $results['objects'][0]->ID );
+	}
+
+	/**
+	 * Test query_db() function pagination.
+	 *
+	 * Ported from ElasticPressLabs 3623f1b (#144).
+	 *
+	 * @since 4.1.0
+	 * @group user
+	 */
+	public function test_query_db_pagination() {
+
+		$user_1_id = get_user_by( 'login', 'admin' )->ID;
+		$user_2_id = get_user_by( 'login', 'test_admin' )->ID;
+		$user_3_id = $this->ep_factory->user->create();
+
+		$indexable = ElasticPress\Indexables::factory()->get( 'user' );
+
+		$results = $indexable->query_db( [ 'per_page' => 1 ] );
+		$this->assertCount( 1, $results['objects'] );
+		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertEquals( $user_3_id, $results['objects'][0]->ID );
+
+		// second loop
+		$results = $indexable->query_db(
+			[
+				'per_page'                             => 1,
+				'ep_indexing_last_processed_object_id' => $user_3_id,
+			]
+		);
+
+		$this->assertCount( 1, $results['objects'] );
+		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertEquals( $user_2_id, $results['objects'][0]->ID );
+
+		// third loop
+		$results = $indexable->query_db(
+			[
+				'per_page'                             => 1,
+				'ep_indexing_last_processed_object_id' => $user_2_id,
+			]
+		);
+
+		$this->assertCount( 1, $results['objects'] );
+		$this->assertEquals( 3, $results['total_objects'] );
+		$this->assertEquals( $user_1_id, $results['objects'][0]->ID );
 	}
 }

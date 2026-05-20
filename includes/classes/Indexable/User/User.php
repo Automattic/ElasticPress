@@ -631,6 +631,24 @@ class User extends Indexable {
 			$orderby = explode( ' ', $orderby );
 		}
 
+		$from_to = [
+			'relevance'       => '_score',
+			'user_login'      => 'user_login.raw',
+			'login'           => 'user_login.raw',
+			'ID'              => 'ID',
+			'id'              => 'ID',
+			'display_name'    => 'display_name.sortable',
+			'name'            => 'display_name.sortable',
+			'nicename'        => 'user_nicename.raw',
+			'user_nicename'   => 'user_nicename.raw',
+			'user_email'      => 'user_email.raw',
+			'email'           => 'user_email.raw',
+			'user_url'        => 'user_url.raw',
+			'url'             => 'user_url.raw',
+			'user_registered' => 'user_registered',
+			'registered'      => 'user_registered',
+		];
+
 		$sort = [];
 
 		if ( empty( $orderby ) ) {
@@ -652,62 +670,22 @@ class User extends Indexable {
 				continue;
 			}
 
-			switch ( $orderby_clause ) {
-				case 'relevance':
-					$orderby_field = '_score';
-					break;
+			if ( in_array( $orderby_clause, [ 'meta_value', 'meta_value_num' ], true ) ) {
+				if ( empty( $query_vars['meta_key'] ) ) {
+					continue;
+				}
 
-				case 'user_login':
-				case 'login':
-					$orderby_field = 'user_login.raw';
-					break;
+				/*
+				 * Fixing a false alarm of PHPCS
+				 * phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				 */
+				$from_to['meta_value'] = 'meta.' . $query_vars['meta_key'] . '.raw';
+				// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
-				case 'ID':
-				case 'id':
-					$orderby_field = 'ID';
-					break;
-
-				case 'display_name':
-				case 'name':
-					$orderby_field = 'display_name.sortable';
-					break;
-
-				case 'nicename':
-				case 'user_nicename':
-					$orderby_field = 'user_nicename.raw';
-					break;
-
-				case 'user_email':
-				case 'email':
-					$orderby_field = 'user_email.raw';
-					break;
-
-				case 'user_url':
-				case 'url':
-					$orderby_field = 'user_url.raw';
-					break;
-
-				case 'user_registered':
-				case 'registered':
-					$orderby_field = 'user_registered';
-					break;
-
-				case 'meta_value':
-					if ( ! empty( $query_vars['meta_key'] ) ) {
-						$orderby_field = 'meta.' . $query_vars['meta_key'] . '.raw';
-					}
-					break;
-
-				case 'meta_value_num':
-					if ( ! empty( $query_vars['meta_key'] ) ) {
-						$orderby_field = 'meta.' . $query_vars['meta_key'] . '.long';
-					}
-					break;
-
-				default:
-					$orderby_field = $orderby_clause;
-					break;
+				$from_to['meta_value_num'] = 'meta.' . $query_vars['meta_key'] . '.long';
 			}
+
+			$orderby_field = $from_to[ $orderby_clause ] ?? $orderby_clause;
 
 			$sort[] = array(
 				$orderby_field => array(

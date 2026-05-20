@@ -65,8 +65,8 @@ class User extends Indexable {
 	/**
 	 * Format query vars into ES query
 	 *
-	 * @param  array          $query_vars WP_User_Query args.
-	 * @param  WP_User_Query  $query      User query object
+	 * @param  array         $query_vars WP_User_Query args.
+	 * @param  WP_User_Query $query      User query object
 	 * @since  3.0
 	 * @return array
 	 */

@@ -1398,4 +1398,72 @@ class TestUser extends BaseTestCase {
 		$this->assertEquals( 2, $query->total_users );
 		$this->assertTrue( $query->query_vars['elasticsearch_success'] );
 	}
+
+	/**
+	 * Test ep_user_pre_query_db_results filter to short-circuit the DB query.
+	 *
+	 * Ported from ElasticPressLabs 21b6a66 (#141).
+	 *
+	 * @since 4.1.0
+	 * @group user
+	 */
+	public function test_ep_user_pre_query_db_results_filter() {
+		$users = $this->createAndIndexUsers();
+
+		$expected_results = [
+			'objects'       => [
+				(object) [ 'ID' => $users[0] ],
+				(object) [ 'ID' => $users[1] ],
+			],
+			'total_objects' => 2,
+		];
+
+		add_filter(
+			'ep_user_pre_query_db_results',
+			function () use ( $expected_results ) {
+				return $expected_results;
+			}
+		);
+
+		$user    = ElasticPress\Indexables::factory()->get( 'user' );
+		$results = $user->query_db( [] );
+
+		$this->assertEquals( $expected_results['objects'], $results['objects'] );
+		$this->assertEquals( $expected_results['total_objects'], $results['total_objects'] );
+		$this->assertEquals( $expected_results['objects'][0]->ID, $results['objects'][0]->ID );
+		$this->assertEquals( $expected_results['objects'][1]->ID, $results['objects'][1]->ID );
+	}
+
+	/**
+	 * Test ep_user_query_db_sql filter to modify the SQL query.
+	 *
+	 * Ported from ElasticPressLabs 21b6a66 (#141).
+	 *
+	 * @since 4.1.0
+	 * @group user
+	 */
+	public function test_ep_user_query_db_sql_filter() {
+		global $wpdb;
+
+		$user_id = $this->ep_factory->user->create();
+
+		add_filter(
+			'ep_user_query_db_sql',
+			function () use ( $wpdb, $user_id ) {
+				return $wpdb->prepare(
+					"SELECT SQL_CALC_FOUND_ROWS ID FROM {$wpdb->users} WHERE ID = %d",
+					$user_id
+				);
+			},
+			10,
+			2
+		);
+
+		$user    = ElasticPress\Indexables::factory()->get( 'user' );
+		$results = $user->query_db( [] );
+
+		$this->assertCount( 1, $results['objects'] );
+		$this->assertEquals( $user_id, $results['objects'][0]->ID );
+		$this->assertEquals( 1, $results['total_objects'] );
+	}
 }

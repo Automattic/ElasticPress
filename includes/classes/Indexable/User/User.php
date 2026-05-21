@@ -609,10 +609,10 @@ class User extends Indexable {
 	/**
 	 * Convert the alias to a properly-prefixed sort value.
 	 *
+	 * @param string $orderby       Orderby query var.
+	 * @param string $default_order Order direction.
+	 * @param array  $query_vars    Query vars.
 	 * @since  3.0
-	 * @param  string $orderby Orderby query var
-	 * @param  string $default_order Order direction
-	 * @param  array  $query_vars Query vars
 	 * @return array
 	 */
 	public function parse_orderby( $orderby, $default_order, $query_vars ) {
@@ -752,6 +752,7 @@ class User extends Indexable {
 		$orderby_args = sanitize_sql_orderby( "{$args['orderby']} {$args['order']}" );
 		$orderby      = $orderby_args ? sprintf( 'ORDER BY %s', $orderby_args ) : '';
 
+		// Construct WHERE clause based on include and exclude parameters.
 		$where = [];
 
 		if ( ! empty( $args['include'] ) ) {
@@ -764,6 +765,7 @@ class User extends Indexable {
 			$where[]     = "ID NOT IN ($exclude_ids)";
 		}
 
+		// Disable advanced pagination if we're targeting specific users or using offset.
 		if ( isset( $args['include'] ) || isset( $args['exclude'] ) || 0 < $args['offset'] ) {
 			$args['ep_indexing_advanced_pagination'] = false;
 		}
@@ -775,6 +777,8 @@ class User extends Indexable {
 			$requested_upper_limit_id = $args['ep_indexing_upper_limit_object_id'] ?? PHP_INT_MAX;
 			$last_processed_id        = $args['ep_indexing_last_processed_object_id'] ?? null;
 
+			// On the first loop we begin with the requested upper limit ID.
+			// For subsequent loops, use the last processed ID to paginate.
 			$upper_limit_range_id = is_numeric( $last_processed_id ) ? $last_processed_id - 1 : $requested_upper_limit_id;
 
 			$range = [
@@ -785,6 +789,10 @@ class User extends Indexable {
 			$where        = array_merge( $where, $range );
 			$where_clause = 'WHERE ' . implode( ' AND ', $where );
 
+			/**
+			 * WP_User_Query doesn't let us get users across all blogs easily. This is the best
+			 * way to do that.
+			 */
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 			$sql = $wpdb->prepare(
 				"SELECT ID FROM {$wpdb->users} {$where_clause} {$orderby} LIMIT %d, %d",
@@ -810,6 +818,10 @@ class User extends Indexable {
 
 			$total_objects = $this->get_total_objects_for_query( $args );
 		} else {
+			/**
+			 * WP_User_Query doesn't let us get users across all blogs easily. This is the best
+			 * way to do that.
+			 */
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 			$sql = $wpdb->prepare(
 				"SELECT SQL_CALC_FOUND_ROWS ID FROM {$wpdb->users} {$where_clause} {$orderby} LIMIT %d, %d",
@@ -867,9 +879,11 @@ class User extends Indexable {
 
 		$where = [];
 
+		// Add ID range conditions.
 		$where['upper_limit'] = "{$wpdb->users}.ID <= " . absint( $requested_upper_limit_id );
 		$where['lower_limit'] = "{$wpdb->users}.ID >= " . absint( $requested_lower_limit_id );
 
+		// Include any additional where conditions from the original query.
 		if ( ! empty( $query_args['include'] ) ) {
 			$include_ids = implode( ',', array_map( 'absint', (array) $query_args['include'] ) );
 			$where[]     = "ID IN ($include_ids)";

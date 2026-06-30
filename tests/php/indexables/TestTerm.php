@@ -1534,7 +1534,7 @@ class TestTerm extends BaseTestCase {
 
 		$results = $term_indexable->query_db(
 			[
-				'taxonomy' => 'post_tag',
+				'taxonomy'     => 'post_tag',
 				'cache_buster' => wp_generate_uuid4(),
 			]
 		);

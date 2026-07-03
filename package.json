@@ -7,7 +7,7 @@
     "@wordpress/env": "^11.10.0",
     "10up-toolkit": "^3.0.0",
     "classnames": "^2.3.1",
-    "cypress": "^9.5.0",
+    "cypress": "^15.18.0",
     "cypress-file-upload": "^5.0.8",
     "eslint-plugin-cypress": "^2.12.1",
     "jsdoc": "^4.0.5",

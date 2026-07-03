@@ -479,34 +479,34 @@ class Post extends Indexable {
 		$post_content_filtered_allowed = apply_filters( 'ep_allow_post_content_filtered_index', true );
 
 		$post_args = array(
-			'post_id'               => $post_id,
-			'ID'                    => $post_id,
-			'post_author'           => $user_data,
-			'post_date'             => $post_date,
-			'post_date_gmt'         => $post_date_gmt,
-			'post_title'            => $post->post_title,
-			'post_excerpt'          => $post->post_excerpt,
-			'post_content_filtered' => $post_content_filtered_allowed ? apply_filters( 'the_content', $post->post_content ) : '',
-			'post_content'          => $post->post_content,
-			'post_status'           => $post->post_status,
-			'post_name'             => $post->post_name,
-			'post_modified'         => $post_modified,
-			'post_modified_gmt'     => $post_modified_gmt,
-			'post_parent'           => $post->post_parent,
-			'post_type'             => $post->post_type,
-			'post_mime_type'        => $post->post_mime_type,
-			'permalink'             => get_permalink( $post_id ),
-			'terms'                 => $this->prepare_terms( $post ),
-			'meta'                  => $this->prepare_meta_types( $this->prepare_meta( $post ) ), // post_meta removed in 2.4.
-			'date_terms'            => $this->prepare_date_terms( $post_date ),
-			'date_gmt_terms'          => $this->prepare_date_terms( $post_date_gmt ),
-			'modified_date_terms'     => $this->prepare_date_terms( $post_modified ),
-			'modified_date_gmt_terms' => $this->prepare_date_terms( $post_modified_gmt ),
-			'comment_count'         => $comment_count,
-			'comment_status'        => $comment_status,
-			'ping_status'           => $ping_status,
-			'menu_order'            => $menu_order,
-			'guid'                  => $post->guid,
+			'post_id'                 => $post_id,
+			'ID'                      => $post_id,
+			'post_author'             => $user_data,
+			'post_date'               => $post_date,
+			'post_date_gmt'           => $post_date_gmt,
+			'post_title'              => $post->post_title,
+			'post_excerpt'            => $post->post_excerpt,
+			'post_content_filtered'   => $post_content_filtered_allowed ? apply_filters( 'the_content', $post->post_content ) : '',
+			'post_content'            => $post->post_content,
+			'post_status'             => $post->post_status,
+			'post_name'               => $post->post_name,
+			'post_modified'           => $post_modified,
+			'post_modified_gmt'       => $post_modified_gmt,
+			'post_parent'             => $post->post_parent,
+			'post_type'               => $post->post_type,
+			'post_mime_type'          => $post->post_mime_type,
+			'permalink'               => get_permalink( $post_id ),
+			'terms'                   => $this->prepare_terms( $post ),
+			'meta'                    => $this->prepare_meta_types( $this->prepare_meta( $post ) ), // post_meta removed in 2.4.
+			'date_terms'              => $this->prepare_date_terms( $post_date ),
+			'date_gmt_terms'          => $this->prepare_date_terms( $post_date_gmt ?? '' ), // VIP: Index additional fields
+			'modified_date_terms'     => $this->prepare_date_terms( $post_modified ?? '' ), // VIP: Index additional fields
+			'modified_date_gmt_terms' => $this->prepare_date_terms( $post_modified_gmt ?? '' ), // VIP: Index additional fields
+			'comment_count'           => $comment_count,
+			'comment_status'          => $comment_status,
+			'ping_status'             => $ping_status,
+			'menu_order'              => $menu_order,
+			'guid'                    => $post->guid,
 			// VIP: Removed thumbnail
 		);
 
@@ -722,7 +722,7 @@ class Post extends Indexable {
 		$term_orders = wp_cache_get( $cache_key );
 
 		if ( false === $term_orders ) {
-			$results = $wpdb->get_results(
+			$results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$wpdb->prepare(
 					"SELECT term_taxonomy_id, term_order from $wpdb->term_relationships where object_id=%d;",
 					$object_id
@@ -1218,7 +1218,10 @@ class Post extends Indexable {
 					} else {
 						$filtered_mime_type_by_type = wp_match_mime_types( $mime_type, wp_get_mime_types() );
 
-						$args_post_mime_type = array_merge( $args_post_mime_type, $filtered_mime_type_by_type[ $mime_type ] );
+						$args_post_mime_type = array_merge(
+							$args_post_mime_type,
+							$filtered_mime_type_by_type[ $mime_type ] ?? [ $mime_type ]
+						);
 					}
 				}
 

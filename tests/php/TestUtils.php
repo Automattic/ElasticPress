@@ -32,7 +32,7 @@ class TestUtils extends BaseTestCase {
 		ElasticPress\Elasticsearch::factory()->delete_all_indices();
 		ElasticPress\Indexables::factory()->get( 'post' )->put_mapping();
 
-		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->reset_sync_queue();
 
 		$this->setup_test_post_type();
 
@@ -136,7 +136,7 @@ class TestUtils extends BaseTestCase {
 		$creds = \ElasticPress\Utils\sanitize_credentials(
 			[
 				'username' => '<strong>hello</strong> world',
-				'token' => 'able <script>alert("baker");</script>',
+				'token'    => 'able <script>alert("baker");</script>',
 			]
 		);
 
@@ -152,7 +152,7 @@ class TestUtils extends BaseTestCase {
 		$creds = \ElasticPress\Utils\sanitize_credentials(
 			[
 				'username' => 'my-user-name',
-				'token' => 'my-token',
+				'token'    => 'my-token',
 			]
 		);
 

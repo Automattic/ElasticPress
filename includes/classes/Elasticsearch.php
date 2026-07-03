@@ -1623,8 +1623,21 @@ class Elasticsearch {
 	 * @param array $query Query to log.
 	 */
 	protected function add_query_log( $query ) {
+		$wp_debug    = defined( 'WP_DEBUG' ) && WP_DEBUG;
+		$wp_ep_debug = defined( 'WP_EP_DEBUG' ) && WP_EP_DEBUG;
+
+		/**
+		 * Filter query logging. Don't log anything to the queries property when true.
+		 *
+		 * @hook ep_disable_query_logging
+		 * @param  {bool} Whether to log to the queries property. Defaults to false.
+		 * @return {bool} New value
+		 * @since  5.2.0
+		 */
+		$disable_query_logging = apply_filters( 'ep_disable_query_logging', false );
+
 		// VIP: Search Dev Tools relies on this backtrace
-		if ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ( defined( 'WP_EP_DEBUG' ) && WP_EP_DEBUG ) ) {
+		if ( ! $disable_query_logging && ( $wp_debug || $wp_ep_debug ) ) {
 			$backtrace = debug_backtrace( 0 );
 			$call_path = array();
 

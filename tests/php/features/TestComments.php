@@ -32,13 +32,11 @@ class TestComments extends BaseTestCase {
 		ElasticPress\Elasticsearch::factory()->delete_all_indices();
 		ElasticPress\Indexables::factory()->get( 'post' )->put_mapping();
 
-		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->reset_sync_queue();
 
 		$this->setup_test_post_type();
 
 		set_current_screen( 'front' );
-
-		delete_option( 'ep_active_features' );
 	}
 
 	/**
@@ -54,10 +52,8 @@ class TestComments extends BaseTestCase {
 
 		set_current_screen();
 
-		// make sure no one attached to this
-		remove_filter( 'ep_sync_terms_allow_hierarchy', array( $this, 'ep_allow_multiple_level_terms_sync' ), 100 );
 		$this->fired_actions = array();
-    }
+	}
 
 	/**
 	 * Get Comment feature
@@ -75,12 +71,12 @@ class TestComments extends BaseTestCase {
 	 * @since  3.6.0
 	 * @group comments
 	 */
-    public function testConstruct() {
-        $instance = new ElasticPress\Feature\Comments\Comments();
+	public function testConstruct() {
+		$instance = new ElasticPress\Feature\Comments\Comments();
 
-        $this->assertEquals( 'comments', $instance->slug );
-        $this->assertEquals( 'Comments', $instance->title );
-    }
+		$this->assertEquals( 'comments', $instance->slug );
+		$this->assertEquals( 'Comments', $instance->title );
+	}
 
 	/**
 	 * Test Comment Feature box summary
@@ -88,13 +84,13 @@ class TestComments extends BaseTestCase {
 	 * @since  3.6.0
 	 * @group comments
 	 */
-    public function testBoxSummary() {
+	public function testBoxSummary() {
 		ob_start();
 		$this->get_feature()->output_feature_box_summary();
-        $output = ob_get_clean();
+		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'Improve comment search relevancy and query performance.', $output );
-    }
+	}
 
 	/**
 	 * Test Comment Feature box long text
@@ -102,10 +98,10 @@ class TestComments extends BaseTestCase {
 	 * @since  3.6.0
 	 * @group comments
 	 */
-    public function testBoxLong() {
+	public function testBoxLong() {
 		ob_start();
 		$this->get_feature()->output_feature_box_long();
-        $output = ob_get_clean();
+		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'This feature will empower your website to overcome traditional WordPress comment search and query limitations that can present themselves at scale.', $output );
 	}
@@ -120,27 +116,35 @@ class TestComments extends BaseTestCase {
 		$this->assertTrue( $this->get_feature()->integrate_search_queries( true, null ) );
 		$this->assertFalse( $this->get_feature()->integrate_search_queries( false, null ) );
 
-		$query = new WP_Comment_Query( [
-			'ep_integrate' => false
-		] );
+		$query = new WP_Comment_Query(
+			[
+				'ep_integrate' => false,
+			]
+		);
 
 		$this->assertFalse( $this->get_feature()->integrate_search_queries( true, $query ) );
 
-		$query = new WP_Comment_Query( [
-			'ep_integrate' => 0
-		] );
+		$query = new WP_Comment_Query(
+			[
+				'ep_integrate' => 0,
+			]
+		);
 
 		$this->assertFalse( $this->get_feature()->integrate_search_queries( true, $query ) );
 
-		$query = new WP_Comment_Query( [
-			'ep_integrate' => 'false'
-		] );
+		$query = new WP_Comment_Query(
+			[
+				'ep_integrate' => 'false',
+			]
+		);
 
 		$this->assertFalse( $this->get_feature()->integrate_search_queries( true, $query ) );
 
-		$query = new WP_Comment_Query( [
-			'search' => 'blog'
-		] );
+		$query = new WP_Comment_Query(
+			[
+				'search' => 'blog',
+			]
+		);
 
 		$this->assertTrue( $this->get_feature()->integrate_search_queries( false, $query ) );
 	}
@@ -151,9 +155,9 @@ class TestComments extends BaseTestCase {
 	 * @since  3.6.0
 	 * @group comments
 	 */
-    public function testRequirementsStatus() {
-        $status = $this->get_feature()->requirements_status();
+	public function testRequirementsStatus() {
+		$status = $this->get_feature()->requirements_status();
 
 		$this->assertEquals( 1, $status->code );
-    }
+	}
 }

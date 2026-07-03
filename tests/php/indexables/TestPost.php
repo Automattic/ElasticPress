@@ -21,9 +21,11 @@ class TestPost extends BaseTestCase {
 	 */
 	public $is_404 = false;
 
-	public static function setUpBeforeClass() {
-		// VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
-		if ( ! defined( 'EP_HOST' )) {
+	/**
+	 * VIP: This should always defined on VIP. We define it here, so that Utils\get_host() will always use that value no matter what blog.
+	 */
+	public static function setUpBeforeClass(): void {
+		if ( ! defined( 'EP_HOST' ) ) {
 			define( 'EP_HOST', \ElasticPress\Utils\get_host() );
 		}
 	}
@@ -45,7 +47,7 @@ class TestPost extends BaseTestCase {
 		ElasticPress\Elasticsearch::factory()->delete_all_indices();
 		ElasticPress\Indexables::factory()->get( 'post' )->put_mapping();
 
-		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->reset_sync_queue();
 
 		$this->setup_test_post_type();
 
@@ -3713,10 +3715,15 @@ class TestPost extends BaseTestCase {
 		$this->assertTrue( is_array( $recognizable_time ) && 6 === count( $recognizable_time ) );
 		$this->assertTrue( is_array( $recognizable_time ) && array_key_exists( 'datetime', $recognizable_time ) && '2020-01-20 00:00:00' === $recognizable_time['datetime'] );
 		$this->assertTrue( is_array( $relative_format ) && 6 === count( $relative_format ) );
-		$this->assertTrue( is_array( $relative_format ) && array_key_exists( 'datetime', $relative_format ) && date( 'Y-m-d H:i:s', strtotime( '+1 year' ) ) === $relative_format['datetime'] );
+		$this->assertTrue( is_array( $relative_format ) && array_key_exists( 'datetime', $relative_format ) && gmdate( 'Y-m-d H:i:s', strtotime( '+1 year' ) ) === $relative_format['datetime'] );
 
 	}
 
+	/**
+	 * Test meta date preparation
+	 *
+	 * @group post
+	 */
 	public function testMetaValueTypeDate() {
 		$meta_types = array();
 
@@ -6797,13 +6804,13 @@ class TestPost extends BaseTestCase {
 		// Create a post sync it.
 		$post_id = $this->ep_factory->post->create();
 
-		$this->assertNotEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue );
+		$this->assertNotEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->get_sync_queue() );
 
 		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->index_sync_queue();
 		ElasticPress\Elasticsearch::factory()->refresh_indices();
 
 		// Make sure we're starting with an empty queue.
-		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue );
+		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->get_sync_queue() );
 
 		// Turn on the filter to kill syncing.
 		add_filter( 'ep_post_sync_kill', '__return_true' );
@@ -6812,7 +6819,7 @@ class TestPost extends BaseTestCase {
 
 		// Make sure sync queue is still empty when meta is updated for
 		// an existing post.
-		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue );
+		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->get_sync_queue() );
 
 		wp_insert_post(
 			[
@@ -6822,14 +6829,14 @@ class TestPost extends BaseTestCase {
 		);
 
 		// Make sure sync queue is still empty when a new post is added.
-		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue );
+		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->get_sync_queue() );
 
 		remove_filter( 'ep_post_sync_kill', '__return_true' );
 
 		// Now verify the queue when this filter is not enabled.
 		update_post_meta( $post_id, 'custom_key', 456 );
 
-		$this->assertNotEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue );
+		$this->assertNotEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->get_sync_queue() );
 
 		// Flush the queues.
 		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->index_sync_queue();
@@ -6851,7 +6858,7 @@ class TestPost extends BaseTestCase {
 		ElasticPress\Elasticsearch::factory()->refresh_indices();
 
 		// Make sure we're starting with an empty queue.
-		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue );
+		$this->assertEmpty( ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->get_sync_queue() );
 
 		// Test user permissions. We'll tell WP the user is not allowed
 		// to edit the post we created at the top of this function.
@@ -7175,7 +7182,7 @@ class TestPost extends BaseTestCase {
 		$this->assertNotEmpty( $document['terms']['category'] );
 		$this->assertNotEmpty( $document['terms']['post_tag'] );
 
-		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->sync_queue = [];
+		ElasticPress\Indexables::factory()->get( 'post' )->sync_manager->reset_sync_queue();
 
 		wp_delete_term( $tag, 'post_tag' );
 		wp_delete_term( $cat, 'category' );
@@ -7454,7 +7461,12 @@ class TestPost extends BaseTestCase {
 		$this->assertEquals( $expected_result, get_the_excerpt( $query->posts[0] ) );
 
 		// test post without excerpt
-		$this->ep_factory->post->create( array( 'post_content' => 'new post', 'post_excerpt' => '' ) );
+		$this->ep_factory->post->create(
+			array(
+				'post_content' => 'new post',
+				'post_excerpt' => '',
+			)
+		);
 		ElasticPress\Elasticsearch::factory()->refresh_indices();
 
 		$args  = array(
@@ -7494,7 +7506,7 @@ class TestPost extends BaseTestCase {
 			3
 		);
 
-		$args = array(
+		$args  = array(
 			's'            => '',
 			'ep_integrate' => true,
 		);
@@ -7503,4 +7515,46 @@ class TestPost extends BaseTestCase {
 		$this->assertTrue( $query->elasticsearch_success );
 	}
 
+	/**
+	 * Test that query with unsupported orderby does not use EP.
+	 *
+	 * @since 4.5.0
+	 */
+	public function testQueryWithUnSupportedOrderByDoesNotUseEP() {
+		// test for post__in
+		$query = new \WP_Query(
+			array(
+				'orderby'      => 'post__in',
+				'ep_integrate' => true,
+			)
+		);
+		$this->assertNull( $query->elasticsearch_success );
+
+		// test for post_name__in
+		$query = new \WP_Query(
+			array(
+				'orderby'      => 'post_name__in',
+				'ep_integrate' => true,
+			)
+		);
+		$this->assertNull( $query->elasticsearch_success );
+
+		// test for post_parent__in
+		$query = new \WP_Query(
+			array(
+				'orderby'      => 'post_parent__in',
+				'ep_integrate' => true,
+			)
+		);
+		$this->assertNull( $query->elasticsearch_success );
+
+		// test for parent
+		$query = new \WP_Query(
+			array(
+				'orderby'      => 'parent',
+				'ep_integrate' => true,
+			)
+		);
+		$this->assertNull( $query->elasticsearch_success );
+	}
 }

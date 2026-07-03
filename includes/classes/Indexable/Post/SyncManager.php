@@ -285,9 +285,7 @@ class SyncManager extends SyncManagerAbstract {
 		 * Make sure to remove this post from the sync queue in case an shutdown happens
 		 * before a redirect when a redirect has already been triggered.
 		 */
-		if ( isset( $this->sync_queue[ $post_id ] ) ) {
-			unset( $this->sync_queue[ $post_id ] );
-		}
+		$this->remove_from_queue( $post_id );
 	}
 
 	/**
@@ -483,7 +481,9 @@ class SyncManager extends SyncManagerAbstract {
 		}
 
 		// Find ID of all attached posts (query lifted from wp_delete_term())
-		$object_ids = (array) $wpdb->get_col( $wpdb->prepare( "SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id = %d", $tt_id ) );
+		$object_ids = (array) $wpdb->get_col( // phpcs:disable WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare( "SELECT object_id FROM {$wpdb->term_relationships} WHERE term_taxonomy_id = %d", $tt_id )
+		);
 
 		if ( ! count( $object_ids ) ) {
 			return;

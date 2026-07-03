@@ -17,8 +17,9 @@ jobs:
     name: ${{ matrix.type.name }} - ES ${{ matrix.esVersion }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        esVersion: ['7.17.8', '8.18.1']
+        esVersion: ['8.18.1', '9.1.5']
         type:
          - {name: 'Single Site', command: 'test-single-site'}
          - {name: 'Multisite', command: 'test'}

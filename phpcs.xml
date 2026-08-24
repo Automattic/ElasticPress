@@ -2,6 +2,9 @@
 <ruleset name="10up PHPCS">
   <description>10up PHPCS extended.</description>
 
+  <!-- cs2pr exits with an error when the checkstyle report contains warnings. -->
+  <arg name="warning-severity" value="0" />
+
   <exclude-pattern>*/vendor-prefixed/*</exclude-pattern>
 
   <rule ref="10up-Default">

@@ -4,5 +4,14 @@ module.exports = {
 	...defaultEslintrc,
 	globals: {
 		jQuery: true,
-	}
+	},
+	settings: {
+		...defaultEslintrc.settings,
+		'import/resolver': {
+			typescript: {},
+			node: {
+				extensions: ['.js', '.jsx', '.ts', '.tsx'],
+			},
+		},
+	},
 };

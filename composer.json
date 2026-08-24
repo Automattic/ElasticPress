@@ -42,7 +42,8 @@
     "phpcompatibility/php-compatibility": "dev-develop as 9.99.99",
     "symfony/filesystem": "^7.0",
     "symfony/process": "^7.0",
-    "symfony/finder": "^7.0"
+    "symfony/finder": "^7.0",
+    "wp-coding-standards/wpcs": "^3.4.1"
   },
   "scripts": {
     "lint": "phpcs . -s --runtime-set testVersion 7.4-",

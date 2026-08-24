@@ -2,11 +2,26 @@
 <ruleset name="10up PHPCS">
   <description>10up PHPCS extended.</description>
 
+  <!-- cs2pr exits with an error when the checkstyle report contains warnings. -->
+  <arg name="warning-severity" value="0" />
+
   <exclude-pattern>*/vendor-prefixed/*</exclude-pattern>
 
   <rule ref="10up-Default">
     <exclude name="WordPress.WP.GlobalVariablesOverride.Prohibited" />
     <exclude name="WordPress.DB.SlowDBQuery" />
+
+    <!-- Preserve the existing coding standard when updating WPCS to 3.4.1. -->
+    <exclude name="Generic.WhiteSpace.IncrementDecrementSpacing.SpaceAfterIncrement" />
+    <exclude name="Generic.WhiteSpace.SpreadOperatorSpacingAfter.TooMuchSpace" />
+    <exclude name="PSR2.Classes.ClassDeclaration.CloseBraceAfterBody" />
+    <exclude name="PSR2.Methods.FunctionClosingBrace.SpacingBeforeClose" />
+    <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.SpaceAfterFunction" />
+    <exclude name="Squiz.PHP.EmbeddedPhp.ContentBeforeOpen" />
+    <exclude name="Universal.ControlStructures.DisallowLonelyIf.Found" />
+    <exclude name="Universal.Files.SeparateFunctionsFromOO.Mixed" />
+    <exclude name="Universal.UseStatements.NoLeadingBackslash.LeadingBackslashFound" />
+    <exclude name="Universal.UseStatements.NoUselessAliases.Found" />
   </rule>
   <rule ref="PHPCompatibilityWP" />
 

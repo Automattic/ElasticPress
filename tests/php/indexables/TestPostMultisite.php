@@ -129,6 +129,104 @@ class TestPostMultisite extends BaseTestCase {
 	}
 
 	/**
+	 * Test cross-site scopes override an explicit cache_results opt-in.
+	 *
+	 * @group testMultipleTests
+	 */
+	public function testCacheResultsDisabledForCrossSiteQueries() {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires multisite.' );
+		}
+
+		$sites                = ElasticPress\Utils\get_sites();
+		$foreign_blog_id      = (int) $sites[1]['blog_id'];
+		$using_external_cache = (bool) wp_using_ext_object_cache();
+		wp_using_ext_object_cache( false );
+
+		try {
+			foreach ( [ 'all', $foreign_blog_id, [ $foreign_blog_id ], [ get_current_blog_id(), $foreign_blog_id ] ] as $scope ) {
+				$query = new \WP_Query(
+					[
+						'ep_integrate'  => true,
+						'cache_results' => true,
+						'sites'         => $scope,
+					]
+				);
+
+				$this->assertTrue( $query->elasticsearch_success );
+				$this->assertFalse( $query->get( 'cache_results' ), wp_json_encode( $scope ) );
+			}
+		} finally {
+			wp_using_ext_object_cache( $using_external_cache );
+		}
+	}
+
+	/**
+	 * Test current-blog-only scopes preserve caching without a persistent cache.
+	 *
+	 * @group testMultipleTests
+	 */
+	public function testCacheResultsEnabledForCurrentSiteQueries() {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires multisite.' );
+		}
+
+		$using_external_cache = (bool) wp_using_ext_object_cache();
+		wp_using_ext_object_cache( false );
+
+		try {
+			foreach ( [ 'current', get_current_blog_id(), (string) get_current_blog_id(), [ get_current_blog_id() ] ] as $scope ) {
+				$query = new \WP_Query(
+					[
+						'ep_integrate'  => true,
+						'cache_results' => true,
+						'sites'         => $scope,
+					]
+				);
+
+				$this->assertTrue( $query->elasticsearch_success );
+				$this->assertTrue( $query->get( 'cache_results' ), wp_json_encode( $scope ) );
+			}
+		} finally {
+			wp_using_ext_object_cache( $using_external_cache );
+		}
+	}
+
+	/**
+	 * Test the filtered scope disables caching for network-wide queries.
+	 *
+	 * @group testMultipleTests
+	 */
+	public function testCacheResultsDisabledForFilteredCrossSiteScope() {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires multisite.' );
+		}
+
+		$scope = function () {
+			return 'all';
+		};
+
+		$using_external_cache = (bool) wp_using_ext_object_cache();
+		wp_using_ext_object_cache( false );
+		add_filter( 'ep_search_scope', $scope );
+
+		try {
+			$query = new \WP_Query(
+				[
+					'ep_integrate'  => true,
+					'cache_results' => true,
+				]
+			);
+
+			$this->assertTrue( $query->elasticsearch_success );
+			$this->assertFalse( $query->get( 'cache_results' ) );
+		} finally {
+			remove_filter( 'ep_search_scope', $scope );
+			wp_using_ext_object_cache( $using_external_cache );
+		}
+	}
+
+	/**
 	 * Test the get_sites() function.
 	 *
 	 * @since 0.9

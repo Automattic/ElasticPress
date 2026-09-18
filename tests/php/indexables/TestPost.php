@@ -3455,6 +3455,30 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
+	 * Test persistent object caching overrides an explicit cache_results opt-in.
+	 *
+	 * @group post
+	 */
+	public function testCacheResultsDisabledWithPersistentObjectCache() {
+		$using_external_cache = (bool) wp_using_ext_object_cache();
+		wp_using_ext_object_cache( true );
+
+		try {
+			$query = new \WP_Query(
+				[
+					'ep_integrate'  => true,
+					'cache_results' => true,
+				]
+			);
+
+			$this->assertTrue( $query->elasticsearch_success );
+			$this->assertFalse( $query->get( 'cache_results' ) );
+		} finally {
+			wp_using_ext_object_cache( $using_external_cache );
+		}
+	}
+
+	/**
 	 * Test using cache_results actually populates the cache
 	 *
 	 * @since 1.5

@@ -130,6 +130,45 @@ class TestElasticsearch extends BaseTestCase {
 	}
 
 	/**
+	 * Test the query log backtrace keeps each frame's file, line and call apart (VIP: used by Search Dev Tools).
+	 *
+	 * @group elasticsearch
+	 */
+	public function testQueryLogBacktraceFrames() {
+		$elasticsearch = new \ElasticPress\Elasticsearch();
+
+		$reflection = new \ReflectionClass( $elasticsearch );
+		$property   = $reflection->getProperty( 'queries' );
+		$property->setAccessible( true );
+		$method = $reflection->getMethod( 'add_query_log' );
+		$method->setAccessible( true );
+
+		$log_query = function () use ( $method, $elasticsearch ) {
+			$method->invokeArgs( $elasticsearch, [ [ 'example_query' ] ] );
+		};
+		add_action( 'ep_test_query_log_backtrace', $log_query );
+		$line = __LINE__ + 1;
+		do_action( 'ep_test_query_log_backtrace' );
+		remove_action( 'ep_test_query_log_backtrace', $log_query );
+
+		$frames = $property->getValue( $elasticsearch )[0]['backtrace'];
+		$this->assertNotEmpty( $frames );
+		foreach ( $frames as $frame ) {
+			$this->assertSame( [ 'file', 'line', 'call' ], array_keys( $frame ) );
+		}
+
+		// add_query_log() itself is left out; the closure's invokeArgs() call comes first.
+		$this->assertSame( 'ReflectionMethod->invokeArgs()', $frames[0]['call'] );
+		$this->assertStringEndsWith( 'TestElasticsearch.php', $frames[0]['file'] );
+		$this->assertIsInt( $frames[0]['line'] );
+
+		$hook = array_values( array_filter( $frames, fn( $frame ) => "do_action('ep_test_query_log_backtrace')" === $frame['call'] ) );
+		$this->assertCount( 1, $hook );
+		$this->assertStringEndsWith( 'TestElasticsearch.php', $hook[0]['file'] );
+		$this->assertSame( $line, $hook[0]['line'] );
+	}
+
+	/**
 	 * Test the `ep_remote_request` action
 	 *
 	 * @since 5.2.0

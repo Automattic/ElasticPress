@@ -7254,6 +7254,47 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
+	 * Tests ep_skip_action_edited_term callbacks still receive every object ID of the term
+	 *
+	 * @since 5.4.0
+	 * @group post
+	 */
+	public function test_edited_term_passes_every_object_id_to_skip_filter_callbacks() {
+		$post_ids = [];
+		for ( $i = 0; $i < 4; $i++ ) {
+			$post_ids[] = $this->ep_factory->post->create( [ 'tags_input' => [ 'test-tag' ] ] );
+		}
+
+		$test_tag     = get_term_by( 'name', 'test-tag', 'post_tag' );
+		$sync_manager = ElasticPress\Indexables::factory()->get( 'post' )->sync_manager;
+
+		remove_all_actions( 'edited_term' );
+		add_action( 'edited_term', [ $sync_manager, 'action_edited_term' ], 10, 3 );
+
+		add_filter(
+			'ep_index_default_per_page',
+			function () {
+				return 2;
+			}
+		);
+
+		$received = null;
+		add_filter(
+			'ep_skip_action_edited_term',
+			function ( $skip, $term_id, $tt_id, $taxonomy, $object_ids ) use ( &$received ) {
+				$received = $object_ids;
+				return $skip;
+			},
+			10,
+			5
+		);
+
+		wp_update_term( $test_tag->term_id, 'post_tag', [ 'name' => 'Different Tag Name' ] );
+
+		$this->assertEqualsCanonicalizing( $post_ids, $received );
+	}
+
+	/**
 	 * Tests post without meta value.
 	 *
 	 * @return void

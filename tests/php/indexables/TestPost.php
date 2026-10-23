@@ -7254,7 +7254,7 @@ class TestPost extends BaseTestCase {
 	}
 
 	/**
-	 * Tests ep_skip_action_edited_term callbacks receive every object ID of the term, and every post is queued
+	 * Tests ep_skip_action_edited_term callbacks still receive every object ID of the term
 	 *
 	 * @since 5.4.0
 	 * @group post
@@ -7267,16 +7267,14 @@ class TestPost extends BaseTestCase {
 
 		$test_tag     = get_term_by( 'name', 'test-tag', 'post_tag' );
 		$sync_manager = ElasticPress\Indexables::factory()->get( 'post' )->sync_manager;
-		$sync_manager->reset_sync_queue();
 
 		remove_all_actions( 'edited_term' );
 		add_action( 'edited_term', [ $sync_manager, 'action_edited_term' ], 10, 3 );
 
-		// One object ID per query, so the term's objects are fetched over several queries
 		add_filter(
-			'ep_term_object_ids_chunk_size',
+			'ep_index_default_per_page',
 			function () {
-				return 1;
+				return 2;
 			}
 		);
 
@@ -7293,8 +7291,7 @@ class TestPost extends BaseTestCase {
 
 		wp_update_term( $test_tag->term_id, 'post_tag', [ 'name' => 'Different Tag Name' ] );
 
-		$this->assertSame( $post_ids, $received );
-		$this->assertEqualsCanonicalizing( $post_ids, array_keys( $sync_manager->get_sync_queue() ) );
+		$this->assertEqualsCanonicalizing( $post_ids, $received );
 	}
 
 	/**

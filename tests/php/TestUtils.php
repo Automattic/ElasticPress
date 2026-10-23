@@ -8,6 +8,7 @@
 namespace ElasticPressTest;
 
 use ElasticPress;
+use ElasticPress\Utils;
 
 /**
  * Dashboard test class
@@ -203,7 +204,7 @@ class TestUtils extends BaseTestCase {
 		$expected = [ $in_both, $in_term_2, $in_term_1 ];
 
 		// Both terms in one query
-		$this->assertSame( $expected, ElasticPress\Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag' ) );
+		$this->assertSame( $expected, Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag' ) );
 
 		// One object ID per query, so each term is queried separately and their results are merged
 		add_filter(
@@ -213,9 +214,9 @@ class TestUtils extends BaseTestCase {
 			}
 		);
 
-		$this->assertSame( $expected, ElasticPress\Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag' ) );
-		$this->assertSame( [], ElasticPress\Utils\get_term_object_ids( [ $term_1 ], 'category' ) );
-		$this->assertSame( [], ElasticPress\Utils\get_term_object_ids( [], 'post_tag' ) );
+		$this->assertSame( $expected, Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag' ) );
+		$this->assertSame( [], Utils\get_term_object_ids( [ $term_1 ], 'category' ) );
+		$this->assertSame( [], Utils\get_term_object_ids( [], 'post_tag' ) );
 	}
 
 	/**
@@ -242,7 +243,7 @@ class TestUtils extends BaseTestCase {
 			}
 		);
 
-		$this->assertSame( array_slice( $post_ids, 0, 3 ), ElasticPress\Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag', 3 ) );
-		$this->assertSame( $post_ids, ElasticPress\Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag' ) );
+		$this->assertSame( array_slice( $post_ids, 0, 3 ), Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag', 3 ) );
+		$this->assertSame( $post_ids, Utils\get_term_object_ids( [ $term_1, $term_2 ], 'post_tag' ) );
 	}
 }

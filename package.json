@@ -65,6 +65,7 @@
       "stats-script.min": "./assets/js/stats.js",
       "synonyms-script.min": "./assets/js/synonyms/index.js",
       "weighting-script.min": "./assets/js/weighting.js",
+      "search-editor-script": "./assets/js/search/editor/index.js",
       "autosuggest-styles.min": "./assets/css/autosuggest.css",
       "comments-styles.min": "./assets/css/comments.css",
       "dashboard-styles.min": "./assets/css/dashboard.css",
